@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
 <meta name="theme-color" content="#161719"/>
 <meta name="robots" content="noindex"/>
-<title>HS2 Module 1 — metro maps, chains &amp; deep dive</title>
+<title>Module 1 — Health Science 2</title>
 <style>
 /* ── house palette: Giga's Liquid theme (see estate DESIGN-SYSTEM.md). Values
    are Giga's; only the scope selectors are remapped. ── */
@@ -402,6 +402,23 @@ html.reduce-fx .metro-card{filter:none}
    rendering stays Giga's exactly. */
 @media (pointer:coarse){ .metro-controls button{width:44px;height:44px;font-size:18px} }
 
+/* ADDITIVE (hub-only, reported by parity §10): the FULL-SCREEN switch.
+   Giga's studio map already owns the whole window (inset:0). The hub embeds the
+   same map as a bounded panel in a scrolling page — and reading a 27-relation
+   graph through a 420-px window is the one thing that panel is bad at. So the
+   panel can become the window on demand, and the map is Giga-sized again.
+   Every rule here is gated on .fs, which exists only while a map is expanded,
+   so the resting rendering is still Giga's exactly. z-index sits above the
+   sticky header (30) and below the study scrim (70). */
+.metro-stage.fs{position:fixed;inset:0;width:auto;height:auto;min-height:0;max-height:none;
+  border:0;border-radius:0;z-index:60}
+/* the chrome inside the stage clears a notch once the stage is the whole screen */
+.metro-stage.fs .metro-mastery{top:max(14px,env(safe-area-inset-top));right:max(16px,env(safe-area-inset-right))}
+.metro-stage.fs .metro-controls{bottom:max(16px,env(safe-area-inset-bottom));right:max(16px,env(safe-area-inset-right))}
+.metro-stage.fs .metro-readout{left:max(12px,env(safe-area-inset-left));bottom:max(14px,env(safe-area-inset-bottom))}
+/* the page behind the overlay must not scroll under your finger */
+html.metro-fs,html.metro-fs body{overflow:hidden}
+
 .metro-empty{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;
   text-align:center;gap:8px;padding:40px;color:var(--tx2)}
 .metro-empty b{color:var(--tx);font-size:17px}
@@ -480,7 +497,7 @@ html.reduce-fx .metro-card{filter:none}
 <header>
   <div class="top">
     <a class="iconbtn" href="https://jeremyspm.github.io/" title="Back to the BN Hub">←</a>
-    <div class="brand">Module 1 · Metro Maps &amp; Chains<small>Health Science 2 · 722.541</small></div>
+    <div class="brand">Module 1<small>Health Science 2 · 722.541</small></div>
     <div style="flex:1"></div>
     <button class="iconbtn" id="btnTheme" title="Light / dark">◐</button>
   </div>
@@ -518,7 +535,7 @@ html.reduce-fx .metro-card{filter:none}
        three "???" next to the DRG's role in forced expiration; that uncertainty
        is the lecturer's, so we reproduce it as uncertainty.
    ══════════════════════════════════════════════════════════════════════════ */
-const APP='hs2m1', NAME='HS2 Module 1 — Metro Maps & Chains';
+const APP='hs2m1', NAME='HS2 Module 1';
 const $=s=>document.querySelector(s);
 const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const jget=(k,d)=>{try{const v=localStorage.getItem(APP+'.'+k);return v==null?d:JSON.parse(v);}catch(e){return d;}};
@@ -2918,7 +2935,7 @@ function routeHtml(c){
 function metroHtml(tid){
   return `<div class="mt">
     <div class="mtbar">
-      <span class="hint">Tap a concept to light every route through it and read its links (on a mouse, hovering previews). Drag to pan, pinch or ± to zoom.</span>
+      <span class="hint">Tap a concept to light every route through it and read its links (on a mouse, hovering previews). Drag to pan, pinch or ± to zoom, <b>⛶ fills the screen</b> (Esc leaves).</span>
     </div>
     <div class="metro-stage" id="mtstage-${tid}" data-metro="${tid}">
       <div class="metro-viewport" id="mtvp-${tid}"></div>
@@ -2927,6 +2944,7 @@ function metroHtml(tid){
         <button data-z="in" aria-label="Zoom in">+</button>
         <button data-z="out" aria-label="Zoom out">−</button>
         <button data-z="fit" aria-label="Fit the whole map on screen" title="Fit the whole map (labels get small)">⊡</button>
+        <button data-z="fs" aria-label="Full screen" title="Full screen — the map takes the whole window">⛶</button>
       </div>
     </div>
     <div class="mtkey">
@@ -3105,19 +3123,61 @@ function mountMetro(tid){
      ⊡ is the explicit override — press it and you get the whole thing however
      small, because sometimes you do just want the shape. */
   const FLOOR=0.8;                       // 12.5px label × 0.8 ≈ 10px on screen
+  /* A station is CENTRED on its layout point, and metroDim can hand back a card
+     wider than 2×originX — so the content box starts slightly LEFT of 0 and the
+     first column gets shaved if you fit to 0..L.width. Fit to the real box. */
+  const ox=Math.min(0,...L.stations.map(s=>s.x-s.w/2));
+  const oy=Math.min(0,...L.stations.map(s=>s.y-s.h/2));
+  const boxW=L.width-ox, boxH=L.height-oy;
   const fit=whole=>{
     const availW=stage.clientWidth-20, availH=stage.clientHeight-20;
-    const raw=Math.min(availW/L.width,availH/L.height);
+    const raw=Math.min(availW/boxW,availH/boxH);
     const lo=whole?0.14:FLOOR;
     st.k=clamp(Math.max(raw,lo),lo,1.15);
-    if(raw>=lo){ st.x=10+(availW-L.width*st.k)/2; st.y=10+(availH-L.height*st.k)/2; }
-    else { st.x=10; st.y=Math.max(10,10+(availH-L.height*st.k)/2); }
+    const x0=10-ox*st.k, y0=10-oy*st.k;    // put the content box's own corner at 10,10
+    if(raw>=lo){ st.x=x0+(availW-boxW*st.k)/2; st.y=y0+(availH-boxH*st.k)/2; }
+    else { st.x=x0; st.y=y0+Math.max(0,(availH-boxH*st.k)/2); }
     st.fitted=true; st.moved=false; apply();
   };
   if(!st.fitted) fit(false); else apply();
+
+  /* ── full screen ──────────────────────────────────────────────────────────
+     Two mechanisms, deliberately: a CSS overlay (position:fixed) that works
+     everywhere including iOS Safari, where Element.requestFullscreen does not
+     exist, PLUS a best-effort native request on top so a desktop browser also
+     gives back its own chrome. The overlay is the thing that actually works;
+     native is a bonus and every failure is swallowed.
+
+     Leaving the flow would collapse the page behind the overlay and throw your
+     scroll position away, so .mt is pinned to the height it had first. */
+  const mt=stage.closest('.mt');
+  const fsBtn=stage.querySelector('[data-z="fs"]');
+  const setFs=(on,fromNative)=>{
+    if(on===stage.classList.contains('fs')) return;
+    if(mt) mt.style.minHeight = on ? mt.offsetHeight+'px' : '';   // measure BEFORE it leaves the flow
+    stage.classList.toggle('fs',on);
+    document.documentElement.classList.toggle('metro-fs',on);
+    if(fsBtn){
+      fsBtn.textContent=on?'✕':'⛶';
+      fsBtn.title=on?'Leave full screen (Esc)':'Full screen — the map takes the whole window';
+      fsBtn.setAttribute('aria-label',on?'Leave full screen':'Full screen');
+    }
+    if(!fromNative){
+      try{
+        if(on&&!document.fullscreenElement&&stage.requestFullscreen) stage.requestFullscreen().catch(()=>{});
+        else if(!on&&document.fullscreenElement===stage&&document.exitFullscreen) document.exitFullscreen().catch(()=>{});
+      }catch(e){}
+    }
+    // the stage just changed size by an order of magnitude — refit, or you are
+    // looking at whatever corner of the map happened to be under the old panel.
+    requestAnimationFrame(()=>fit(false));
+  };
+  stage._fs=setFs;   // the global Esc / fullscreenchange handlers reach it through this
+
   stage.querySelectorAll('[data-z]').forEach(b=>{
     b.onclick=ev=>{ ev.stopPropagation();
       const z=b.dataset.z;
+      if(z==='fs'){ setFs(!stage.classList.contains('fs')); return; }
       if(z==='fit'){ fit(true); return; }
       const cx=stage.clientWidth/2, cy=stage.clientHeight/2;
       const k2=clamp(st.k*(z==='in'?1.2:1/1.2),0.25,2.4);
@@ -3380,6 +3440,10 @@ function startView(){
 
 function draw(){
   tabs();
+  // A re-render throws away whatever stage was full screen, so the scroll lock
+  // it set has to go with it or the page is left frozen with nothing on top.
+  document.documentElement.classList.remove('metro-fs');
+  if(document.fullscreenElement&&document.exitFullscreen) document.exitFullscreen().catch(()=>{});
   const t=(DATA.topics||[]).find(x=>x.id===view);
   $('#view').innerHTML = t?topicView(t):(view==='cases'?casesView():startView());
   if(t) mountMetro(t.id);
@@ -3614,6 +3678,22 @@ draw();
 pulse();
 addEventListener('visibilitychange',()=>{ if(document.visibilityState==='hidden') pulse(); });
 addEventListener('pagehide',pulse);
+/* Full screen, registered ONCE (mountMetro re-runs on every rotate, so nothing
+   that accumulates listeners may live inside it). Both handlers find the
+   expanded stage in the DOM and use the toggle it hung on itself. */
+addEventListener('keydown',ev=>{
+  if(ev.key!=='Escape'||document.querySelector('.sbScrim')) return;   // the drill's Esc wins
+  const s=document.querySelector('.metro-stage.fs');
+  if(s&&s._fs){ ev.preventDefault(); s._fs(false); }
+});
+// the browser can leave native full screen without us (Esc, F11, a gesture) —
+// when it does, the overlay has to come down with it.
+addEventListener('fullscreenchange',()=>{
+  if(document.fullscreenElement) return;
+  const s=document.querySelector('.metro-stage.fs');
+  if(s&&s._fs) s._fs(false,true);
+});
+
 /* The metro layout is size-aware, so a rotation or resize wants a refit. Only
    the fit is recomputed — your pan/zoom is kept if you have already moved it. */
 let rzT=null;
