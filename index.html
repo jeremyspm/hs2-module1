@@ -194,26 +194,44 @@ td b{color:var(--tx)}
 .stChain .fill{position:absolute;left:10px;top:15px;width:3px;border-radius:3px;height:calc(100% - 30px);
   background:var(--acc);box-shadow:0 0 10px color-mix(in srgb,var(--acc) 60%,transparent);
   transform-origin:top;transform:scaleY(0)}
-.stChain.lit .fill{animation:stFill .55s cubic-bezier(.4,0,.2,1) forwards}
+.stChain.lit .fill{animation:stFill .95s cubic-bezier(.22,1,.36,1) forwards}
 @keyframes stFill{to{transform:scaleY(1)}}
 .stBead,.stLink{position:relative;max-width:100%;overflow-wrap:anywhere}
 .stBead{background:var(--card2);border:1px solid var(--line2);border-radius:12px;padding:11px 14px;
   font-size:16px;font-weight:650;line-height:1.3}
 .stBead.seed{border-color:color-mix(in srgb,var(--acc) 55%,transparent);background:var(--acc-soft)}
 .stBead.solved{border-color:color-mix(in srgb,var(--good) 50%,transparent)}
-.stBead::before,.stLink::before{content:"";position:absolute;left:-24px;top:16px;
+/* the station dots. --dot is the colour a dot LIGHTS to when the line powers on:
+   accent for scaffolding that was on screen all along, green for a bead you just
+   recovered — so the sweep lands on the piece that was missing. */
+.stBead::before,.stLink::before{content:"";position:absolute;left:-24px;top:16px;--dot:var(--acc);
   width:12px;height:12px;border-radius:50%;background:var(--card);border:2.5px solid var(--line2);box-sizing:border-box}
 .stLink::before{width:7px;height:7px;left:-21.5px;top:14px;border-width:2px}
 .stBead.seed::before{border-color:var(--acc)}
-.stBead.solved::before{border-color:var(--good)}
+.stBead.solved::before{border-color:var(--good);--dot:var(--good)}
+.stLink.solved::before{--dot:var(--good)}
 .stLink{margin:7px 0;color:var(--tx2);font-size:12.5px;font-weight:600;font-style:italic;line-height:1.4;padding:2px 0}
 .stLink.solved{color:var(--good)}
 /* a slot holding an input drops its own chrome — the input IS the box */
 .stBead.hole,.stLink.hole{background:transparent;border:0;padding:0}
 .stLink.hole{margin:9px 0}
-.stChain.lit .stBead,.stChain.lit .stLink{animation:stPop .34s cubic-bezier(.22,1,.36,1) both;
-  animation-delay:calc(var(--i,0) * .05s + .12s)}
-@keyframes stPop{from{opacity:.3;transform:translateY(3px)}to{opacity:1;transform:none}}
+/* Giga's reveal is THREE beats, not one (studio.css:859-865): the rail fills, the
+   dots light one at a time down the line, and only the pieces you just recovered
+   materialise — the scaffolding you could already see stays put. The port kept
+   the rail and blanket-popped everything, so the sweep read as instant. */
+.stChain.lit .stBead::before{animation:stDot .5s cubic-bezier(.22,1,.36,1) both;
+  animation-delay:calc(.32s + var(--i,0) * .13s)}
+.stChain.lit .stLink::before{animation:stDotS .5s cubic-bezier(.22,1,.36,1) both;
+  animation-delay:calc(.32s + var(--i,0) * .13s)}
+@keyframes stDot{from{border-color:var(--line2);background:var(--card);box-shadow:none}
+  to{border-color:var(--dot);background:var(--dot);
+     box-shadow:0 0 0 4px color-mix(in srgb,var(--dot) 22%,transparent),0 0 16px var(--dot)}}
+@keyframes stDotS{from{border-color:var(--line2);background:var(--card);box-shadow:none}
+  to{border-color:var(--dot);background:var(--dot);
+     box-shadow:0 0 0 3px color-mix(in srgb,var(--dot) 18%,transparent),0 0 9px var(--dot)}}
+.stChain.lit .stBead.solved,.stChain.lit .stLink.solved{animation:stPop .5s cubic-bezier(.22,1,.36,1) both;
+  animation-delay:calc(.32s + var(--i,0) * .13s)}
+@keyframes stPop{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
 .tin{width:100%;max-width:270px;background:var(--card2);color:var(--tx);border:1.5px dashed var(--line2);
   border-radius:11px;padding:10px 13px;font:650 16px/1.3 inherit;outline:none;transition:.15s;min-height:44px}
 .tin::placeholder{color:var(--tx3);font-weight:500}
@@ -262,9 +280,16 @@ td b{color:var(--tx)}
 .stStat .cap{font-size:11px;color:var(--tx2);margin-top:5px;line-height:1.35}
 .stDone .alt{margin-top:11px;font-size:13px;color:var(--tx2)}
 .stDone .alt a{color:var(--acc-tx);cursor:pointer;font-weight:700}
+/* Giga decouples the study micro-motion from the OS query ON PURPOSE
+   (studio.css:914-926): the flip, the reveal power-on and the done-screen beats
+   are ONE-SHOT and user-triggered — not the at-rest, per-frame cost this query
+   exists to strip. Giga's entire reduce block is the ambient night-sky glow plus
+   turning the advance SLIDE into a fade. We match that exactly, so the chain
+   lights up here the same as it does in Giga. .rel.lit stays suppressed: it is a
+   twice-REPEATING flash on the mindmap, which is the real hazard this query is
+   for, and it is ours — not part of the ported player. */
 @media (prefers-reduced-motion:reduce){
-  .stChain.lit .fill,.stChain.lit .stBead,.stChain.lit .stLink,.stReveal>*,.stReward,.rel.lit,.rel.lit::before{
-    animation:none;opacity:1;transform:none}
+  .rel.lit,.rel.lit::before{animation:none}
 }
 @media(max-width:400px){
   .stCard{padding:18px 15px;border-radius:16px}
