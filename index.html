@@ -22,7 +22,7 @@
      HOUSE:GIGA:METRO. Glass is used exactly where Giga uses it (the zoom pill
      floating over a map that moves behind it), never on readable content. */
   --gl-tint:rgba(40,40,46,.64); --gl-blur:14px; --gl-sat:200%;
-  --gl-shadow:0 20px 46px -12px rgba(0,0,0,.58),0 4px 14px rgba(0,0,0,.4),inset 0 1px 1px rgba(255,255,255,.13),inset 0 -12px 26px rgba(0,0,0,.16);
+  --gl-shadow:0 20px 46px -12px rgba(0,0,0,.58),0 4px 14px rgba(0,0,0,.4),inset 0 -12px 26px rgba(0,0,0,.16);
   --mm-focus-ring:#f59e0b; --mm-focus-halo:rgba(245,158,11,.45);
 }
 html[data-theme="light"]{
@@ -35,7 +35,7 @@ html[data-theme="light"]{
   --good:#12833A; --hard:#A35C00; --bad:#C62A20; --cyan:#2a7d8c;
   --shadow:0 14px 36px rgba(20,24,40,.10);
   --gl-tint:rgba(246,247,250,.58);
-  --gl-shadow:0 16px 40px -12px rgba(20,24,40,.38),0 4px 12px rgba(20,24,40,.14),inset 0 1px 1px rgba(255,255,255,.55),inset 0 -12px 26px rgba(20,24,40,.06);
+  --gl-shadow:0 16px 40px -12px rgba(20,24,40,.38),0 4px 12px rgba(20,24,40,.14),inset 0 -12px 26px rgba(20,24,40,.06);
 }
 *{box-sizing:border-box}
 html,body{margin:0;min-height:100%}
@@ -63,6 +63,92 @@ header{position:sticky;top:0;z-index:30;background:var(--bg);border-bottom:1px s
 .tab:hover{border-color:var(--line2);color:var(--tx)}
 .tab.on{background:var(--acc);border-color:var(--acc);color:#fff}
 .tab .dot{width:6px;height:6px;border-radius:50%;background:var(--good);flex:0 0 auto}
+
+/* ── CORE MODE ────────────────────────────────────────────────────────────
+   Core is not a skin — it is a smaller page. So there is very little here:
+   a progress bar, a row list, a couple of framed notes. Everything else
+   reuses .card / .cta / .eyebrow / .big-idea exactly as Full does, because a
+   student switching modes should recognise the furniture. */
+.modeBtn{min-height:38px;padding:0 13px;border-radius:10px;font-size:12px;font-weight:800;
+  letter-spacing:.4px;border:1px solid var(--line2);background:var(--card);color:var(--tx2);
+  flex:0 0 auto;transition:.15s}
+.modeBtn:hover{border-color:var(--acc);color:var(--tx)}
+.modeBtn.core{background:color-mix(in srgb,var(--good) 15%,transparent);
+  border-color:color-mix(in srgb,var(--good) 45%,transparent);color:var(--good)}
+/* Core's tab strip carries progress: ✓ for a held spine, a ring for "you're up
+   to this one". Both stay legible against .tab.on's solid accent fill. */
+.tab.cdone{border-color:color-mix(in srgb,var(--good) 50%,transparent);color:var(--good)}
+.tab.cdone.on{background:var(--good);border-color:var(--good);color:#0b1f10}
+.tab.cnext{box-shadow:0 0 0 2px color-mix(in srgb,var(--acc) 55%,transparent)}
+.coreCrumb{display:flex;align-items:center;gap:8px;margin:0 0 8px;flex-wrap:wrap}
+.modeTag{font-size:10px;font-weight:800;letter-spacing:.8px;text-transform:uppercase;
+  color:var(--good);background:color-mix(in srgb,var(--good) 14%,transparent);
+  border:1px solid color-mix(in srgb,var(--good) 38%,transparent);border-radius:999px;padding:2px 9px}
+.nowChip{font-size:10px;font-weight:800;letter-spacing:.6px;text-transform:uppercase;color:#fff;
+  background:var(--acc);border-radius:999px;padding:2px 9px;margin-left:7px;white-space:nowrap}
+/* The gist: the one block of prose Core shows. Sized up from body text, because
+   it is the thing you are meant to read, not skim past. */
+.coreGist{font-size:15px;line-height:1.65;color:var(--tx);margin:0}
+.coreGist b{font-weight:750}
+.coreBig{margin-top:14px}
+.coreProg{margin:0 0 13px}
+.coreBar{height:8px;border-radius:5px;background:var(--line);overflow:hidden}
+.coreBar>i{display:block;height:100%;background:var(--acc);border-radius:5px;transition:width .4s ease}
+.coreProgTx{font-size:12.5px;color:var(--tx2);margin-top:7px}
+.coreProgTx b{color:var(--tx)} .coreProgTx b.ok{color:var(--good)}
+.coreRows{display:flex;flex-direction:column;gap:6px;margin-top:14px}
+.coreRow{display:flex;align-items:center;gap:11px;width:100%;text-align:left;min-height:52px;
+  background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:9px 13px;transition:.13s}
+.coreRow:hover{border-color:var(--acc)}
+.coreRow.next{border-color:var(--acc);background:color-mix(in srgb,var(--acc) 9%,var(--card2))}
+.coreRow.done .coreRowIc{color:var(--good)}
+.coreRowIc{font-size:16px;flex:0 0 auto;width:22px;text-align:center}
+.coreRowNm{flex:1;min-width:0;font-size:13.5px;font-weight:700;color:var(--tx);line-height:1.3}
+.coreRowSub{display:block;font-size:11.5px;font-weight:600;color:var(--tx3);margin-top:2px}
+/* a conic-gradient ring, so the dial needs no SVG and no extra element */
+.coreRing{flex:0 0 auto;width:22px;height:22px;border-radius:50%;
+  background:conic-gradient(var(--acc) calc(var(--p,0) * 1%), var(--line) 0);
+  -webkit-mask:radial-gradient(circle, transparent 6px, #000 7px);
+  mask:radial-gradient(circle, transparent 6px, #000 7px)}
+.coreRow.done .coreRing{background:conic-gradient(var(--good) 100%, var(--good) 0)}
+/* the reward beat, and the escape hatch that is always beside it */
+.coreWin{background:color-mix(in srgb,var(--good) 10%,transparent);
+  border:1px solid color-mix(in srgb,var(--good) 34%,transparent);
+  border-radius:12px;padding:14px 15px;margin-top:14px}
+.coreWin b{color:var(--tx);font-size:14.5px}
+.coreWin p{font-size:13px;color:var(--tx2);line-height:1.55;margin:7px 0 12px}
+.coreNextTx{margin:10px 0 0 !important;font-size:12.5px}
+.coreEsc{border-top:1px solid var(--line);margin-top:15px;padding-top:13px}
+.coreEsc p{font-size:12.5px;color:var(--tx2);line-height:1.55;margin:0 0 9px}
+.linkbtn{font-size:13px;font-weight:750;color:var(--acc-tx);background:none;border:0;padding:6px 0;
+  text-decoration:underline;text-underline-offset:3px;min-height:38px}
+.linkbtn:hover{color:var(--acc)}
+.coreEscNote{display:block;font-size:11.5px;color:var(--tx3);margin-top:2px}
+
+/* ── the mode chooser sheet ───────────────────────────────────────────────
+   Deliberately the same vocabulary as the hub's ⚡ chooser (.stMode/.stModeB),
+   so the two-ways-in gesture reads as one idea across the estate. Opaque, per
+   the house rule — nothing is moving behind it worth refracting. */
+.modal{position:fixed;inset:0;background:color-mix(in srgb,var(--bg) 66%,transparent);
+  display:flex;align-items:center;justify-content:center;z-index:70;padding:18px;
+  animation:mfade .16s ease;overflow-y:auto}
+@keyframes mfade{from{opacity:0}to{opacity:1}}
+.sheet{background:var(--card);border:1px solid var(--line2);border-radius:16px;max-width:430px;
+  width:100%;padding:22px;box-shadow:0 20px 46px -12px rgba(0,0,0,.5);margin:auto}
+.sheet h3{margin:0 0 4px;font-size:18px}
+.sheet .lead{margin:0 0 16px;font-size:13px;color:var(--tx2);line-height:1.5}
+.sheet .x{float:right;font-size:19px;color:var(--tx3);padding:0 4px;margin:-4px -4px 0 0;
+  background:none;border:0;line-height:1}
+.sheet .x:hover{color:var(--tx)}
+.stMode{display:flex;flex-direction:column;gap:10px}
+.stModeB{display:block;width:100%;text-align:left;background:var(--card2);
+  border:1.5px solid var(--line2);border-radius:14px;padding:15px 16px;transition:.14s}
+.stModeB:hover{border-color:var(--acc);transform:translateY(-1px)}
+.stModeB .t{display:flex;align-items:center;gap:9px;font-size:15.5px;font-weight:800;letter-spacing:-.2px;color:var(--tx)}
+.stModeB .t .em{font-size:17px}
+.stModeB .why{margin:5px 0 0;font-size:12.5px;color:var(--tx2);line-height:1.5}
+.stModeB .meta{margin:8px 0 0;font-size:11.5px;font-weight:700;color:var(--acc-tx);letter-spacing:.2px;line-height:1.45}
+@media(max-width:520px){ .stModeB{padding:14px} .sheet{padding:18px} }
 
 /* ---- cards ---- */
 .card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:18px 18px;margin:0 0 14px}
@@ -128,7 +214,7 @@ td b{color:var(--tx)}
 
 /* ---- the CTA row ---- */
 .cta{width:100%;min-height:52px;background:var(--acc);color:#fff;border-radius:12px;padding:14px;
-  font-size:15px;font-weight:800;box-shadow:inset 0 1px 0 rgba(255,255,255,.28),0 1px 3px rgba(0,0,0,.22);transition:.13s}
+  font-size:15px;font-weight:800;box-shadow:0 1px 3px rgba(0,0,0,.22);transition:.13s}
 .cta:hover{filter:brightness(1.06)}
 .cta.ghost{background:var(--card2);color:var(--tx);border:1px solid var(--line2);box-shadow:none}
 .ctarow{display:flex;flex-direction:column;gap:9px;margin-top:4px}
@@ -257,7 +343,7 @@ td b{color:var(--tx)}
 .stReward.lapse .stDial .v{color:var(--tx2)}
 .stActs{margin-top:14px;display:flex;flex-direction:column;gap:9px}
 .stGo{width:100%;background:var(--acc);color:#fff;border-radius:12px;padding:14px;font-size:15px;font-weight:800;
-  min-height:52px;box-shadow:inset 0 1px 0 rgba(255,255,255,.28),0 1px 3px rgba(0,0,0,.22);transition:.13s}
+  min-height:52px;box-shadow:0 1px 3px rgba(0,0,0,.22);transition:.13s}
 .stGo:hover{filter:brightness(1.06)}
 .stGrades{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px}
 .stGrades button{border-radius:12px;padding:11px 3px;min-height:56px;font-weight:800;font-size:12.5px;
@@ -387,20 +473,23 @@ html.reduce-fx .metro-card{filter:none}
 .metro-mastery b{color:var(--acc-tx);font-weight:800;font-size:14px;margin-right:3px}
 .metro-card:hover{transform:translate(-50%,-50%) translateY(-2px);box-shadow:0 10px 26px rgba(0,0,0,.5)}
 .metro-card.xchg{border-left:0;box-shadow:0 6px 20px rgba(0,0,0,.4),0 0 0 1px var(--ac),0 0 22px -4px var(--ac)}
-.metro-cimg{width:100%;height:78px;object-fit:cover;display:block;background:var(--card2);flex:none}
-.metro-chead{display:flex;align-items:center;gap:8px;padding:8px 11px}
+/* Head row is the whole card now (no summary tier, no count badge — see the
+   STATION SIZING note by metroSize). Centred, because every card on a map is the
+   same height and a one-line name in a two-line card should sit in the middle. */
+.metro-chead{display:flex;align-items:center;gap:8px;padding:8px 11px;flex:1;min-height:0}
 .metro-dot{width:9px;height:9px;border-radius:50%;background:var(--ac,var(--acc-tx));box-shadow:0 0 9px var(--ac);flex:none}
 .metro-card.xchg .metro-dot{width:11px;height:11px}
 /* [deviation: metro-lab] Giga is `white-space:nowrap;text-overflow:ellipsis`,
    which it can afford because the full name is one hover away. Here the station
-   name IS the thing being recalled and "Chemoreceptors in the carotid and aor…"
-   is not a station name, so it wraps to at most 3 lines instead. The 15px
-   line-height is what metroDim() adds per extra row. */
-.metro-lab{font-size:12.5px;font-weight:650;flex:1;line-height:15px;overflow:hidden;
-  display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow-wrap:anywhere}
-.metro-badge{font-size:10px;font-weight:700;color:var(--tx2);background:color-mix(in srgb,var(--ac) 20%,transparent);border-radius:6px;padding:1px 6px;flex:none}
-.metro-csum{padding:0 11px 9px;color:var(--tx2);font-size:11.5px;line-height:1.4;overflow:hidden;
-  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+   name IS the thing being recalled — "Chemoreceptors in the carotid and aor…" is
+   not a station name — so it wraps freely and is NEVER clamped or ellipsised.
+   The card is measured around this rule, not the other way round: whatever this
+   text needs, metroSize() has already reserved for every card on the map. */
+.metro-lab{font-size:12.5px;font-weight:650;flex:1;line-height:15px;overflow-wrap:anywhere}
+/* offscreen twin of .metro-lab used by measureLabels() — must inherit exactly
+   the same font metrics, so it lives in the page rather than in a canvas. */
+.metro-meas{position:absolute;left:-99999px;top:0;visibility:hidden;pointer-events:none;
+  contain:layout style;width:0;height:0;overflow:hidden}
 .metro-stage.focus .metro-card.off{opacity:.16}
 .metro-stage.focus .metro-card.on{opacity:1}
 /* The card you jumped to pulses an amber ring. Drawn with box-shadow (not an
@@ -457,8 +546,15 @@ html.metro-fs,html.metro-fs body{overflow:hidden}
   box-shadow:0 14px 40px rgba(0,0,0,.46);pointer-events:none;z-index:6;font-size:13px}
 .metro-rfrom{color:var(--tx2);font-size:11.5px;margin-bottom:7px;line-height:1.5}
 .metro-rfrom em{color:var(--tx3);font-style:italic}
-.metro-rroot{display:flex;align-items:center;gap:8px;font-weight:750;font-size:14.5px;color:var(--tx);margin-bottom:7px}
+.metro-rroot{display:flex;align-items:center;gap:8px;font-weight:750;font-size:14.5px;color:var(--tx);margin-bottom:7px;flex-wrap:wrap}
 .metro-rdot{width:10px;height:10px;border-radius:50%;flex:none}
+.metro-rroutes{font-size:10.5px;font-weight:700;letter-spacing:.3px;text-transform:uppercase;
+  color:var(--tx2);background:color-mix(in srgb,var(--tx) 8%,transparent);border-radius:999px;padding:2px 8px}
+/* The glossary definition, in full. It used to be two clamped lines on the
+   station card, which meant every definition ended mid-sentence. Here it has
+   room, and the readout already scrolls (max-height:54%) if one runs long. */
+.metro-rdef{color:var(--tx2);font-size:12px;line-height:1.5;margin:0 0 9px;
+  padding:8px 10px;background:var(--card2);border-radius:9px;border-left:2px solid var(--line2)}
 .metro-tree{list-style:none;margin:0;padding:0 0 0 13px;border-left:1px solid var(--line2)}
 .metro-tree .metro-tree{margin-top:1px}
 .metro-trow{display:flex;align-items:baseline;gap:6px;padding:2px 0;flex-wrap:wrap}
@@ -524,6 +620,7 @@ html.metro-fs,html.metro-fs body{overflow:hidden}
     <a class="iconbtn" href="https://jeremyspm.github.io/" title="Back to the BN Hub">←</a>
     <div class="brand">Module 1<small>Health Science 2 · 722.541</small></div>
     <div style="flex:1"></div>
+    <button class="modeBtn" id="modeBtn" title="Core or Full — switch any time, nothing is lost">Full</button>
     <button class="iconbtn" id="btnTheme" title="Light / dark">◐</button>
   </div>
   <nav class="tabs" id="tabs"></nav>
@@ -581,6 +678,7 @@ const DATA={ topics:[
 {
  id:'cvs1', icon:'🩸', name:'Blood Vessels & Circulation', chapters:'Patton ch. 29 · CVS 1',
  tagline:'One closed loop, two circuits, three kinds of pipe — and the whole point of all of it happens in the capillary.',
+ gist:`Your heart pumps blood around a <b>closed loop</b> that never opens: out through <b>arteries</b> (thick walls, high pressure), back through <b>veins</b> (thin walls, low pressure). Between them sit the <b>capillaries</b>, one cell thick — and that thinness is the point, because the capillary is where the whole system actually delivers anything. At the start of a capillary the pump's push (<b>hydrostatic pressure</b>) is winning, so fluid is squeezed OUT to the tissue; by the end the push has faded and the proteins left behind in the blood pull fluid back IN (<b>oncotic pressure</b>).`,
  primer:`The cardiovascular system is a <b>pump plus pipes</b>, and the lecture opens by naming its three jobs:
  <b>transport</b>, <b>pumping</b> and <b>protection</b> (against disease/infection and against blood loss). In humans it is a
  <b>closed</b> system — blood never leaves the vessels — and a <b>double</b> circulation: the <b>pulmonary</b> circuit runs to
@@ -705,6 +803,7 @@ const DATA={ topics:[
 {
  id:'cvs2', icon:'🫀', name:'The Heart & Blood Flow', chapters:'Patton ch. 28 & 30 · CVS 2',
  tagline:'A double pump in a fibrous bag: two circuits that never mix, four valves that only open one way, and two sounds that tell you they shut.',
+ gist:`The heart is really <b>two pumps side by side</b>: the right side sends blood to the lungs to pick up oxygen, the left side sends it to the rest of the body. Blood always travels the same one-way circuit — body → right side → lungs → left side → body — and it never mixes across the middle. <b>Four valves</b> enforce that one-way rule by slamming shut behind the blood, and the two sounds you hear through a stethoscope, <b>lub</b> and <b>dub</b>, are simply those valves closing.`,
  primer:`The heart sits in the <b>mediastinum</b> — the potential space between the lungs — and is wrapped in layers you have to
  keep straight because each one has its own "-itis". Outermost is the tough <b>fibrous parietal pericardium</b>; inside that
  the <b>serous parietal pericardium</b>; then the <b>pericardial space</b> with its lubricating fluid; then the <b>visceral
@@ -826,6 +925,7 @@ const DATA={ topics:[
 {
  id:'cvs3', icon:'⚡', name:'Cardiac Physiology — conduction, ECG & output', chapters:'Patton ch. 9, 17 & 28 · CVS 3',
  tagline:'The heart wires itself, times itself and reports itself — and CO = SV × HR is the sentence the rest of the module is written in.',
+ gist:`The heart doesn't wait to be told to beat — it has its own pacemaker, the <b>SA node</b>, and the electrical signal spreads from there along a fixed path so the chambers squeeze in the right order. That electrical signal is what an <b>ECG</b> draws; the big spike is the ventricles firing. How much blood you actually move per minute is just <b>cardiac output = stroke volume × heart rate</b>: how much per beat, times how many beats — and almost everything that goes wrong with a patient changes one of those two numbers.`,
  primer:`Cardiac muscle is unlike any other muscle in the body, and two properties explain the whole topic.
  <b>Automaticity</b> (electrogenic / autorhythmicity): cardiac muscle is <b>self-excitable</b> — it generates its own electrical
  impulse, with no nerve and no brain required. <b>Conductivity</b>: the muscle is a functional syncytium, its cells branched
@@ -976,6 +1076,7 @@ const DATA={ topics:[
 {
  id:'cvs4', icon:'🩺', name:'Regulation of Blood Pressure', chapters:'Patton ch. 30 · CVS 4',
  tagline:'Two systems guard one number: nerves fix it in seconds, kidneys fix it over hours — and both work on BP = SV × HR × PR.',
+ gist:`Blood pressure is guarded by two systems on completely different clocks. The fast one is a <b>reflex</b>: stretch sensors in your big arteries constantly report the pressure to your brainstem, and within seconds it speeds the heart up or slows it down to correct any drift. The slow one is the <b>kidneys</b>, which over hours release hormones that tighten the vessels and hold on to salt and water — more fluid in the pipes means more pressure.`,
  primer:`Blood pressure is <b>the pressure exerted by blood on the walls of the arteries</b>, written systolic/diastolic. Normal is
  around <b>120/80</b>; hypertension is a sustained arterial pressure of <b>140/90 mmHg or higher</b>; hypotension is a systolic
  below <b>100 mmHg</b>. Two derived numbers you need: <b>pulse pressure</b> = the difference between systolic and diastolic, and
@@ -1122,6 +1223,7 @@ const DATA={ topics:[
 {
  id:'shock', icon:'🚨', name:'Circulatory Shock', chapters:'Patton ch. 30 · CVS 4 (self-directed)',
  tagline:'Not "low blood pressure" — inadequate blood flow to meet the needs of the tissue. Name the type by naming which term of BP = SV × HR × PR failed.',
+ gist:`<b>Shock is not simply a low blood pressure.</b> It is blood flow so poor that tissue stops getting the oxygen it needs — cells switch to their emergency fuel supply, acid builds up, and organs start to fail. Blood pressure depends on three things: how much blood the heart pushes out per beat, how fast it beats, and how tight the vessels are — so name the type of shock by naming which of those three has failed. The commonest one, <b>hypovolaemic shock</b>, is simply not enough blood in the system.`,
  primer:`The lecture's definition is deliberately about <b>flow</b>, not about a number: circulatory shock is
  <b>inadequate blood flow to meet the needs of the tissue</b>. That causes poor tissue perfusion and tissue damage, and
  reduced urine output. The 2024 revision deck puts it as: blood pressure too low to maintain tissue perfusion → cells starve
@@ -1205,6 +1307,7 @@ const DATA={ topics:[
 {
  id:'resp1', icon:'🌬️', name:'Respiratory Anatomy', chapters:'Patton ch. 35 · RESP 1',
  tagline:'One tube that cleans, warms, moistens and talks — ending in 300 million bubbles one cell thick.',
+ gist:`Air takes one fixed path in: nose → throat → voice box → windpipe → branching tubes → the lungs. On the way down that tube <b>warms, moistens and filters</b> the air, which is why breathing through your nose beats breathing through your mouth. At the very end are about 300 million tiny air sacs, the <b>alveoli</b> — and like the capillary, each one is a single cell thick, so oxygen has almost no distance to cross to reach the blood.`,
  primer:`Respiration is <b>four distinct processes</b>, and confusing them is the most common way to lose marks in this module.
  <b>Pulmonary ventilation</b> = breathing, moving air in and out. <b>External respiration</b> = O₂ moves out of the alveoli into
  the pulmonary capillary blood and CO₂ moves out of the blood into the alveoli. <b>Transport of gases in the blood</b>.
@@ -1343,6 +1446,7 @@ const DATA={ topics:[
 {
  id:'resp2', icon:'💨', name:'Ventilation & External Respiration', chapters:'Patton ch. 35 & 36 · RESP 2',
  tagline:'Breathing is Boyle\'s law with muscles attached; gas exchange is diffusion down a partial-pressure gradient. Nothing is pumped.',
+ gist:`Breathing in is <b>muscular work</b>: your diaphragm drops, your chest expands, and making the space bigger drops the pressure inside it — so air falls in on its own to even things up. Breathing out at rest costs you nothing; you simply relax and the stretched lung springs back. Once air is in the alveoli, nothing pumps the oxygen across — it simply <b>drifts from where there is more of it to where there is less</b>, which is why it moves into blood and carbon dioxide moves out.`,
  primer:`Pulmonary ventilation is a <b>mechanical</b> process, and the whole of it falls out of <b>Boyle's law</b>: at constant
  temperature a gas's volume is inversely proportional to its pressure (V = 1/P). Air then simply <b>flows down its pressure
  gradient</b>, from high to low. Nothing sucks; nothing pumps.
@@ -1479,6 +1583,7 @@ const DATA={ topics:[
 {
  id:'resp3', icon:'🔄', name:'Gas Transport & Acid–Base', chapters:'Patton ch. 36 · RESP 3',
  tagline:'Oxygen rides on haemoglobin; CO₂ mostly turns into bicarbonate — and that reaction is why your breathing sets your blood pH.',
+ gist:`Oxygen barely dissolves in blood, so almost all of it is carried piggyback on <b>haemoglobin</b> inside red cells — it clips on in the lungs where oxygen is plentiful, and lets go in tissue where it is scarce. Carbon dioxide travels differently: most of it is converted into <b>bicarbonate</b>, and that conversion releases acid. That is the link worth holding on to — because CO₂ becomes acid, <b>how fast you breathe sets how acidic your blood is</b>: blow off more CO₂ and the blood turns alkaline, hold it in and the blood turns acidic.`,
  primer:`<b>Oxygen transport.</b> 98.5% of molecular oxygen is bound to haemoglobin as <b>oxyhaemoglobin (HbO₂)</b> inside red
  blood cells; under 1.5% is dissolved in plasma. Each Hb molecule binds <b>four</b> oxygen molecules, rapidly and reversibly.
  Arterial blood is <b>98%</b> saturated; venous blood is <b>75%</b> saturated — so at rest, each haemoglobin is still carrying
@@ -1637,6 +1742,7 @@ const DATA={ topics:[
 {
  id:'resp4', icon:'🧠', name:'Regulation of Breathing', chapters:'Patton ch. 36 · RESP 4',
  tagline:'The medulla has its own pacemaker, and CO₂ — not oxygen — is what it listens to hardest.',
+ gist:`You don't decide to breathe — a group of cells in your <b>brainstem</b> fires rhythmically on its own and drives the diaphragm, which is why breathing carries on while you sleep. Sensors then adjust that rhythm based on the blood's chemistry. The counter-intuitive part, and the bit that gets tested: the strongest trigger is <b>not</b> a lack of oxygen but a rise in <b>carbon dioxide</b> — because rising CO₂ means rising acid, and your brain guards pH hardest.`,
  primer:`Breathing is involuntary but consciously modifiable for a short period. The normal rate is <b>12–20 breaths/min</b>, and
  the expiratory phase is slightly longer than the inspiratory phase, followed by a short pause.
  <br><br>The rhythm is generated in the <b>medullary rhythmicity area</b>, which contains two clustered groups. The <b>ventral
@@ -1773,6 +1879,7 @@ const DATA={ topics:[
 {
  id:'lymph', icon:'🛡️', name:'The Lymphatic System', chapters:'Module 1.3 · Lymphatic system',
  tagline:'A one-way drain with no pump: it collects what the capillaries leak, checks it for invaders, and gives it back to the veins.',
+ gist:`Capillaries leak, always — a little more fluid is pushed out into your tissue than gets pulled back in. The <b>lymphatic system</b> is the drain that collects that leftover fluid and returns it to your veins, so it never builds up. It is a <b>one-way</b> system with <b>no pump</b>: it relies on your ordinary movement and muscle squeeze to shift the fluid along. On the way it routes everything through <b>lymph nodes</b>, which is where your immune system inspects it — and it is why a blocked or removed set of nodes causes swelling in the limb they used to drain.`,
  primer:`The lymphatic system is an organ system that <b>helps collect excess interstitial fluid from tissues and transport that
  fluid back to the bloodstream for re-circulation</b>. It has three parts: <b>vessels</b>, <b>organs</b> (thymus, spleen, lymph
  nodes) and <b>lymphatic tissues</b> (MALT).
@@ -2446,10 +2553,27 @@ lymph:[
 /* Named routes. `idx` are indexes into the topic's LINKS array, and consecutive
    entries MUST join (link[k].to === link[k+1].from) — chainsOf() splits and
    warns rather than rendering a chain whose beads lie. */
+/* ── `core:true` = THE SPINE (added 2026-07-27 for Core mode) ───────────────
+   Two routes per topic, twenty in all. Core mode plays and maps ONLY these; Full
+   mode is unchanged and plays everything.
+
+   These are not "the easy ones" — several are the longest routes in their topic.
+   They are the relations the rest of the topic hangs off, chosen by one test:
+   if you understood only this route, would the other routes in the topic still
+   make sense? Blood flow through the heart makes coronary circulation legible;
+   the reverse is not true. The filtration/reabsorption pair is what every oedema
+   route is a perturbation OF.
+
+   A route is a CONNECTED run, so a core subset is still a real map — a spine
+   with branches pruned, never a scatter of orphan concepts. That is the whole
+   reason the flag lives here and not on individual relations.
+
+   Changing a flag changes what Core mode teaches AND what it bids to ⚡. Keep it
+   to about two per topic: three is not a spine, it is the topic again. */
 const ROUTES={
  cvs1:[
-  {name:'Filtration — the arterial end', idx:[0,1,2,3]},
-  {name:'Reabsorption — the venous end', idx:[4,5,6,7]},
+  {name:'Filtration — the arterial end', idx:[0,1,2,3], core:true},
+  {name:'Reabsorption — the venous end', idx:[4,5,6,7], core:true},
   {name:'Hypertension → oedema', idx:[8,9,10]},
   {name:'Hypoalbuminaemia → oedema', idx:[11,12,13]},
   {name:'Dehydration → less filtration', idx:[14,15]},
@@ -2457,61 +2581,61 @@ const ROUTES={
   {name:'Why the capillary is one cell thick', idx:[20,21,22]}
  ],
  cvs2:[
-  {name:'Blood flow through the heart', idx:[0,1,2,3,4,5,6,7,8,9,10,11]},
+  {name:'Blood flow through the heart', idx:[0,1,2,3,4,5,6,7,8,9,10,11], core:true},
   {name:'Coronary circulation', idx:[16,17,18,19]},
-  {name:'How the AV valves are held shut', idx:[14,15]}
+  {name:'How the AV valves are held shut', idx:[14,15], core:true}
  ],
  cvs3:[
-  {name:'The conduction pathway to the QRS', idx:[0,1,2,3,4,5,6]},
+  {name:'The conduction pathway to the QRS', idx:[0,1,2,3,4,5,6], core:true},
   {name:'The P wave', idx:[7,8]},
   {name:'The T wave', idx:[9,10]},
   {name:'Why the myocardium contracts as one', idx:[12,13]},
-  {name:'CO = SV × HR, BP = CO × PR', idx:[14,15]}
+  {name:'CO = SV × HR, BP = CO × PR', idx:[14,15], core:true}
  ],
  cvs4:[
-  {name:'Baroreflex — the cardiac arm', idx:[0,1,2,3,4]},
+  {name:'Baroreflex — the cardiac arm', idx:[0,1,2,3,4], core:true},
   {name:'Baroreflex — the vessel arm', idx:[5,6,7]},
-  {name:'RAAS — the vasoconstriction arm', idx:[8,9,10,11,12]},
+  {name:'RAAS — the vasoconstriction arm', idx:[8,9,10,11,12], core:true},
   {name:'RAAS — the ADH arm', idx:[13,14,15,16]},
   {name:'RAAS — the aldosterone arm', idx:[17,18]},
   {name:'Direct renal control', idx:[19,20,21]},
   {name:'The chemoreflex', idx:[25,26]}
  ],
  shock:[
-  {name:'Why shock kills', idx:[0,1,2,3]},
-  {name:'Hypovolaemic shock', idx:[4,5,6,7]},
+  {name:'Why shock kills', idx:[0,1,2,3], core:true},
+  {name:'Hypovolaemic shock', idx:[4,5,6,7], core:true},
   {name:'Distributive shock', idx:[9,10]}
  ],
  resp1:[
-  {name:'The pathway of air', idx:[0,1,2,3,4,5,6,7,8]},
-  {name:'Why the alveolus can exchange gas', idx:[9,10]},
+  {name:'The pathway of air', idx:[0,1,2,3,4,5,6,7,8], core:true},
+  {name:'Why the alveolus can exchange gas', idx:[9,10], core:true},
   {name:'Surfactant keeps the alveoli open', idx:[11,12]},
   {name:'The muco-ciliary escalator', idx:[13,14]},
   {name:'The cough reflex', idx:[15,16]}
  ],
  resp2:[
-  {name:'Quiet inspiration', idx:[0,1,2,3,4,5]},
-  {name:'Quiet expiration is passive', idx:[6,7,8]},
+  {name:'Quiet inspiration', idx:[0,1,2,3,4,5], core:true},
+  {name:'Quiet expiration is passive', idx:[6,7,8], core:true},
   {name:'How a pneumothorax collapses a lung', idx:[13,14]},
   {name:'External respiration', idx:[15,16]}
  ],
  resp3:[
-  {name:'CO₂ becomes bicarbonate', idx:[0,1,2]},
+  {name:'CO₂ becomes bicarbonate', idx:[0,1,2], core:true},
   {name:'Hyperventilation → alkalosis', idx:[3,4,5]},
   {name:'Hypoventilation → acidosis', idx:[6,7,8]},
-  {name:'Oxygen loading', idx:[9,10]},
+  {name:'Oxygen loading', idx:[9,10], core:true},
   {name:'The Bohr effect — unloading', idx:[11,12]},
   {name:'Compensating for metabolic acidosis', idx:[13,14,15]}
  ],
  resp4:[
-  {name:'Rhythm → diaphragm', idx:[0,1,2]},
+  {name:'Rhythm → diaphragm', idx:[0,1,2], core:true},
   {name:'Rhythm → intercostals', idx:[3,4,5]},
-  {name:'The strongest respiratory drive', idx:[6,7,8]}
+  {name:'The strongest respiratory drive', idx:[6,7,8], core:true}
  ],
  lymph:[
-  {name:'Where lymph goes', idx:[0,1,2,3,4,5]},
+  {name:'Where lymph goes', idx:[0,1,2,3,4,5], core:true},
   {name:'How the immune response is organised', idx:[7,8]},
-  {name:'How lymphoedema happens', idx:[11,12]}
+  {name:'How lymphoedema happens', idx:[11,12], core:true}
  ]
 };
 
@@ -2525,10 +2649,57 @@ const dueAt=s=>s.last?s.last+BOX_DAYS[Math.max(0,Math.min(MAX_BOX,s.box))]*DAY:0
 const qOf=id=>QSRS[id]||{box:0,last:0};
 const mOf=id=>MSRS[id]||{box:0,last:0};
 
+/* ══════════════════ CORE / FULL MODE ══════════════════════════════════════
+   Module 1 is ten topics, 214 relations, 86 written questions, 81 recognition
+   checks and five case studies. For someone coming back from semester break that
+   is not a study tool, it is a wall — the problem is not that the physiology is
+   hard, it is that ~180 things are asking for attention at once.
+
+   Core mode is NOT a second, easier copy of the module. There is exactly one set
+   of content, one SRS and one set of sources; Core is a VIEW of it — the twenty
+   `core:true` routes, a short plain-language gist per topic, and the map filtered
+   to match. Nothing is rewritten, so nothing can drift out of step with Canvas.
+
+   Three rules this file must keep:
+     1. NO HARD LOCK. Full is always one tap away, from every topic, at any
+        progress. A test does not wait for you to unlock the glossary, and an app
+        that hides the lecturer's own questions the night before a test has
+        actively harmed its user. The unlock is a REWARD (it opens itself, with a
+        note) — never a gate.
+     2. THE POOL FOLLOWS THE MODE, VISIBLY. In Core, ⚡ is bid only core cards, and
+        the pulse carries a `scope` saying so, so the hub can print "70 of 214 in
+        play". A reduced pool the player cannot see is how somebody drills twenty
+        percent of a module and believes they are covered.
+     3. ONE SRS. Core and Full grade the same relations into the same boxes.
+        Switching mode never resets or forks progress.                        */
+const MODES=['core','full'];
+let MODE=(function(){ const m=jget('mode',null); return MODES.indexOf(m)>=0?m:null; })();
+const isCore=()=>MODE==='core';
+function setMode(m){ if(MODES.indexOf(m)<0) return; MODE=m; jset('mode',m); }
+
+/* The two accessors every mode-aware read goes through. routesOf keeps ROUTE
+   objects (so idx still indexes the FULL link array); linksOf returns a filtered
+   array for iteration only — never index into it. */
+function routesOf(tid){ const rs=ROUTES[tid]||[]; return isCore()?rs.filter(r=>r.core):rs; }
+function coreIdx(tid){
+  const s=new Set(); (ROUTES[tid]||[]).forEach(r=>{ if(r.core) r.idx.forEach(i=>s.add(i)); }); return s;
+}
+function linksOf(tid){
+  const ls=LINKS[tid]||[];
+  if(!isCore()) return ls;
+  const keep=coreIdx(tid);
+  return ls.filter((l,i)=>keep.has(i));
+}
+// counts that don't move with the mode — for the honest "x of y" readouts
+const allLinksN=tid=>(LINKS[tid]||[]).length;
+const coreLinksN=tid=>coreIdx(tid).size;
+const TOTAL_LINKS=()=>(DATA.topics||[]).reduce((s,t)=>s+allLinksN(t.id),0);
+const TOTAL_CORE =()=>(DATA.topics||[]).reduce((s,t)=>s+coreLinksN(t.id),0);
+
 /* Chains — runs of relations stitched end to end. Level and due date roll UP
    from the member links: you are only as internalised as your weakest link. */
 function chainsOf(tid){
-  const ls=LINKS[tid]||[], routes=ROUTES[tid]||[];
+  const ls=LINKS[tid]||[], routes=routesOf(tid);
   const used=new Set(), out=[];
   routes.forEach(r=>{
     r.idx.forEach(i=>used.add(i));
@@ -2548,7 +2719,10 @@ function chainsOf(tid){
     });
     if(run.length) out.push(mkChain(tid,r.name,run));
   });
-  ls.forEach((l,i)=>{ if(!used.has(i)) out.push(mkChain(tid,'',[l])); });
+  /* Orphan relations — authored but on no named route — become single-link
+     chains in Full mode so nothing goes unrehearsed. Core mode skips them: an
+     unnamed one-link chain is exactly the loose detail Core exists to defer. */
+  if(!isCore()) ls.forEach((l,i)=>{ if(!used.has(i)) out.push(mkChain(tid,'',[l])); });
   return out.filter(c=>c&&c.links.length);
 }
 function mkChain(tid,name,links){
@@ -2672,25 +2846,31 @@ function dueQsOf(t){
 }
 function offers(){
   const now=Date.now();
-  const list=(DATA.topics||[]).filter(t=>(LINKS[t.id]||[]).length).map(t=>{
-    const chains=chainsOf(t.id);
+  const core=isCore();
+  const list=(DATA.topics||[]).filter(t=>linksOf(t.id).length).map(t=>{
+    const chains=chainsOf(t.id);                       // already mode-filtered
     const dueChains=chains.filter(c=>c.due<=now);
     const d=dueQsOf(t);
-    const totalLinks=(LINKS[t.id]||[]).length;
-    const dueLinks=(LINKS[t.id]||[]).filter(l=>dueAt(srsOf(linkKey(l)))<=now).length;
-    const total=totalLinks+d.qs.length+d.ms.length;
-    const due=dueLinks+d.dueQs.length+d.dueMs.length;
+    const links=linksOf(t.id);
+    const totalLinks=links.length;
+    const dueLinks=links.filter(l=>dueAt(srsOf(linkKey(l)))<=now).length;
+    /* In Core the lecturer's SAQs and the recognition MCQs are NOT bid. They are
+       question banks over the whole topic, so they ask about branches Core mode
+       has not shown — and being quizzed on material you were never given is the
+       exact experience Core exists to remove. They come back with Full. */
+    const total=totalLinks+(core?0:d.qs.length+d.ms.length);
+    const due=dueLinks+(core?0:d.dueQs.length+d.dueMs.length);
     const frac=total?(due/total):0;
     /* Chains lead — they carry the causal spine. A couple of the lecturer's own
        SAQs and one recognition MCQ ride along, because formulas, lists and
        discriminations are not chains (blueprint: "when to diverge"). */
     const cards=(dueChains.length?dueChains:chains).slice()
       .sort((a,b)=>a.due-b.due).slice(0,7).map(chainCard)
-      .concat((d.dueQs.length?d.dueQs:d.qs).slice(0,3).map(x=>({
+      .concat(core?[]:(d.dueQs.length?d.dueQs:d.qs).slice(0,3).map(x=>({
         id:x.id, type:'saq', q:plain(x.q.q),
         points:(x.q.a||[]).map(plain), marks:x.q.marks||(x.q.a||[]).length,
         sr:{box:x.s.box||0,level:1,lapses:0} })))
-      .concat((d.dueMs.length?d.dueMs:d.ms).slice(0,2).map(x=>({
+      .concat(core?[]:(d.dueMs.length?d.dueMs:d.ms).slice(0,2).map(x=>({
         id:x.id, type:'mcq', q:plain(x.q.q),
         options:(x.q.options||[]).map(plain), correct:x.q.correct,
         why:plain(x.q.why||''),
@@ -2699,20 +2879,43 @@ function offers(){
       assess:['hs2-t1','hs2-final'], evPerMin:+(0.14+0.34*frac).toFixed(2),
       kind:'cards', cards:cards, counts:{ due:due, total:total } };
   });
-  /* TEN topics compete for the spec's FIVE offer slots. On a fresh device they
-     all tie on evPerMin, and a stable sort would drop the SAME five every time
-     — half the module would never once reach the player. Rotate by day number
-     first, so the seats move around. (Learned the hard way on the old hub with
-     six topics; with ten it matters twice as much.) */
+  /* ── EVERY topic is bid, not the top five (2026-07-27) ────────────────────
+     This used to `.slice(0,5)`, per the spec's "≤5 decks" rule, with a
+     day-rotation so the five seats moved around and no topic starved.
+
+     Focused mode broke that: the hub now lets you pick a specific topic to
+     drill, and it can only offer what an app has actually published. Half the
+     module being invisible on any given day is fine for a planner that picks
+     FOR you; it is a bug the moment you are choosing for yourself — the topic
+     you came to revise is simply not in the list, for no reason you can see.
+     ~57 KB of localStorage buys the whole catalogue, so it is bid.
+
+     The rotation stays, as ORDER. Array.prototype.sort is stable, and so is the
+     hub's own `offers.sort((a,b)=>b.score-a.score)`, so on a fresh device where
+     every topic ties on evPerMin the day-rotated order survives all the way into
+     the Guided queue — which is exactly what stopped the same five topics
+     leading every session. */
   const d=Math.floor(Date.now()/DAY)%Math.max(1,list.length);
   const rot=list.slice(d).concat(list.slice(0,d));
-  return rot.sort((a,b)=>b.evPerMin-a.evPerMin).slice(0,5);
+  return rot.sort((a,b)=>b.evPerMin-a.evPerMin);
+}
+/* `scope` — the pulse contract addition that keeps Core honest (2026-07-27).
+   An app that is deliberately bidding less than it has SAYS SO, in numbers the
+   hub can print verbatim. The hub never infers this: no scope means no banner,
+   exactly like `counts` and `ladder`. Omitted entirely in Full, because in Full
+   there is nothing being withheld and a banner would be noise. */
+function scopeOf(){
+  if(!isCore()) return null;
+  return { label:'Core spine only', inPlay:TOTAL_CORE(), total:TOTAL_LINKS() };
 }
 function pulse(){
-  try{ localStorage.setItem('studybus.pulse.'+APP, JSON.stringify({
-    v:2, app:APP, name:NAME, url:location.origin+location.pathname, ts:Date.now(),
-    ladder:{ boxDays:BOX_DAYS, maxBox:MAX_BOX, levelUpBox:LEVEL_UP_BOX, step:STEP },
-    offers:offers() })); }catch(e){}
+  try{
+    const p={ v:2, app:APP, name:NAME, url:location.origin+location.pathname, ts:Date.now(),
+      ladder:{ boxDays:BOX_DAYS, maxBox:MAX_BOX, levelUpBox:LEVEL_UP_BOX, step:STEP },
+      offers:offers() };
+    const sc=scopeOf(); if(sc) p.scope=sc;
+    localStorage.setItem('studybus.pulse.'+APP, JSON.stringify(p));
+  }catch(e){}
 }
 
 /* ══════════════════ THE METRO LAYOUT ══════════════════
@@ -2851,7 +3054,7 @@ function metroLayout(nodes,edges,opts){
    stations keyed by their exact label, so a concept two routes share is ONE
    station — that is what makes an interchange mean something. */
 function metroGraph(tid){
-  const ls=LINKS[tid]||[], sum=summaryOf(tid);
+  const ls=linksOf(tid), sum=summaryOf(tid);
   const nodes=[], seen=new Set();
   const add=lab=>{ if(!seen.has(lab)){ seen.add(lab); nodes.push({id:lab,label:lab,summary:sum[lab]||''}); } };
   const edges=ls.map((l,i)=>{ add(l[0]); add(l[2]);
@@ -2872,7 +3075,7 @@ function summaryOf(tid){
   const t=(DATA.topics||[]).find(x=>x.id===tid), out={};
   if(t){
     const by=new Map((t.glossary||[]).map(g=>[norm(g.t),plain(g.d)]));
-    new Set((LINKS[tid]||[]).flatMap(l=>[l[0],l[2]])).forEach(lab=>{
+    new Set(linksOf(tid).flatMap(l=>[l[0],l[2]])).forEach(lab=>{
       const d=by.get(norm(lab)); if(d) out[lab]=d;
     });
   }
@@ -2883,7 +3086,7 @@ function summaryOf(tid){
    A station only glows once those relations have survived real intervals — it
    can never brighten for free. */
 function stationMastery(tid){
-  const ls=LINKS[tid]||[], m={};
+  const ls=linksOf(tid), m={};
   const acc={};
   ls.forEach(l=>{
     const s=srsOf(linkKey(l)), v=s.last?Math.min(1,(s.box||0)/MAX_BOX):0;
@@ -2893,7 +3096,7 @@ function stationMastery(tid){
   return m;
 }
 function mapPct(tid){
-  const ls=LINKS[tid]||[]; if(!ls.length) return 0;
+  const ls=linksOf(tid); if(!ls.length) return 0;
   let s=0; ls.forEach(l=>{ const st=srsOf(linkKey(l));
     s+=st.last?Math.min(1,(st.box||0)/MAX_BOX):0; });
   return Math.round(100*s/ls.length);
@@ -2905,21 +3108,90 @@ const norm=s=>String(s||'').toLowerCase().replace(/[^a-z0-9₂₃⁺]+/g,' ').tr
 const TK='theme';
 function applyTheme(){ document.documentElement.setAttribute('data-theme', jget(TK,'dark')); }
 $('#btnTheme').onclick=()=>{ jset(TK, jget(TK,'dark')==='dark'?'light':'dark'); applyTheme(); if(view!=='start'&&view!=='cases') draw(); };
+$('#modeBtn').onclick=()=>showModeChooser(true);
 applyTheme();
 
 let view=jget('tab','start');
 const DONE=jget('done',{});
+/* Case Studies are whole-topic synthesis questions spanning four topics at a
+   time — genuinely the last thing you should meet, so Core does not list them.
+   (A deep link straight to ?tab=cases still resolves; see BOOT.) */
 const TABS=()=>[{id:'start',icon:'🧭',name:'Start Here'}]
   .concat((DATA.topics||[]).map(x=>({id:x.id,icon:x.icon,name:x.name})))
-  .concat([{id:'cases',icon:'📁',name:'Case Studies'}]);
+  .concat(isCore()?[]:[{id:'cases',icon:'📁',name:'Case Studies'}]);
 
 function tabs(){
-  $('#tabs').innerHTML=TABS().map(x=>
-    `<button class="tab${view===x.id?' on':''}" data-t="${x.id}">${x.icon} ${esc(x.name)}${
-      DONE[x.id]?'<span class="dot"></span>':''}</button>`).join('');
+  /* In Core the tab strip doubles as the progress map: a ✓ replaces the icon on
+     a topic whose spine is held, and the one you're up to is ringed. The dot
+     (Full's "I've worked through this" tick) is a self-report, so it stays out
+     of Core, where the ✓ has to mean recall. */
+  $('#tabs').innerHTML=TABS().map(x=>{
+    if(!isCore()) return `<button class="tab${view===x.id?' on':''}" data-t="${x.id}">${x.icon} ${esc(x.name)}${
+      DONE[x.id]?'<span class="dot"></span>':''}</button>`;
+    const isTopic=(DATA.topics||[]).some(t=>t.id===x.id);
+    const p=isTopic?coreHeld(x.id):null;
+    const nxt=nextCoreTopic();
+    return `<button class="tab${view===x.id?' on':''}${p&&p.done?' cdone':''}${
+      nxt&&nxt.id===x.id?' cnext':''}" data-t="${x.id}">${
+      p&&p.done?'✓':x.icon} ${esc(x.name)}</button>`;
+  }).join('');
   $('#tabs').querySelectorAll('[data-t]').forEach(b=>{
     b.onclick=()=>{ view=b.dataset.t; jset('tab',view); draw(); window.scrollTo(0,0); };
   });
+  const mb=$('#modeBtn');
+  if(mb){ mb.textContent=isCore()?'Core':'Full'; mb.className='modeBtn '+(isCore()?'core':'full'); }
+}
+
+/* ── the mode chooser ──────────────────────────────────────────────────────
+   Shown once, on the first visit, and reachable forever after from the header
+   pill. Same shape as the hub's ⚡ chooser on purpose: two ways in, one
+   sentence each, and the consequence of each stated in numbers. */
+function showModeChooser(force){
+  const totCore=TOTAL_CORE(), totAll=TOTAL_LINKS();
+  const nSaq=(DATA.topics||[]).reduce((s,t)=>s+(t.recall||[]).length,0);
+  const nMcq=(DATA.topics||[]).reduce((s,t)=>s+(t.mcq||[]).length,0);
+  const doneN=coreDoneIds().length, nT=(DATA.topics||[]).length;
+  const m=document.createElement('div'); m.className='modal';
+  m.innerHTML=`<div class="sheet">
+    ${force?'<span class="x" data-a="x">×</span>':''}
+    <h3>How much do you want at once?</h3>
+    <p class="lead">Same course material, same sources, same progress either way — you can switch whenever
+    you like and nothing is lost.</p>
+    <div class="stMode">
+      <button class="stModeB" data-a="core">
+        <span class="t"><span class="em">🌱</span>Core</span>
+        <p class="why">The spine of each topic — two pathways, a short plain-English explanation, and the map.
+        Best if you're meeting this material for the first time, or coming back after a break.</p>
+        <p class="meta">${totCore} of ${totAll} relations · 10 topics · no jargon tables${
+          doneN?` · ${doneN}/${nT} spines already held`:''}</p>
+      </button>
+      <button class="stModeB" data-a="full">
+        <span class="t"><span class="em">📚</span>Full</span>
+        <p class="why">Everything: all ${totAll} relations, the glossary, the lecturer's own questions with
+        their marking points, the nursing notes and the case studies.</p>
+        <p class="meta">${totAll} relations · ${nSaq} written · ${nMcq} recognition · 5 cases</p>
+      </button>
+    </div>
+    <p class="fineprint" style="margin:14px 0 0;font-size:11px;line-height:1.5;opacity:.6;text-align:center">
+      While you're in Core, the hub's ⚡ Study button is bid only core questions — so it never tests you on
+      something this mode hasn't shown you.</p>
+  </div>`;
+  const close=()=>m.remove();
+  m.addEventListener('click',e=>{
+    if(e.target===m&&force) return close();
+    const el=e.target.closest('[data-a]'); if(!el) return;
+    const a=el.dataset.a;
+    if(a==='x') return close();
+    if(a==='core'||a==='full'){
+      const changed=MODE!==a;
+      setMode(a); close();
+      // a mode change rewrites what is bid, so republish before anything else
+      if(changed){ view=jget('tab','start');
+        if(isCore()&&view==='cases') view='start';
+        draw(); pulse(); window.scrollTo(0,0); }
+    }
+  });
+  document.body.appendChild(m);
 }
 
 function strength(k){
@@ -2977,37 +3249,78 @@ function metroHtml(tid){
       <span><i class="xc"></i> interchange — several routes meet here</span>
       <span><i style="background:#ff5a5f"></i><i style="background:#2f6bff"></i><i style="background:#22c55e"></i> each route is its own line</span>
       <span>routes stay dark until you focus a concept — that is the point</span>
+      <span>tap a station for its links, and its definition where the glossary has one</span>
       <span>a station glows in its own colour only once the relations touching it survive real intervals</span>
     </div>
   </div>`;
 }
 
-/* Estimated card size, in Giga's three tiers (MetroView.jsx dimOf): chip →
-   chip+summary → chip+image. The hub has no per-concept images, so it uses the
-   first two; a station gets the summary tier when the topic glossary genuinely
-   defines that concept, and stays a chip when it does not. Nothing is invented
-   to fill the bigger card — an undefined concept simply stays small.
+/* ── STATION SIZING: ONE SIZE, MEASURED (rebuilt 2026-07-27) ──────────────
+   Every station on a map is the SAME width and the SAME height. That is what
+   makes it read as a metro map rather than a pile of boxes, and it is what the
+   columns need in order to line up.
 
-   Deterministic (no measuring pass), so the layout is stable between renders and
-   the map does not jump around under you.
+   WHAT WAS WRONG BEFORE. The old dimOf estimated the card from the label's
+   character count (w = 42 + len × 6.4, capped 150-224) and reserved 32px for a
+   two-line summary. Three separate failures fell out of that:
+     · widths varied 150→224 px, so no two columns agreed and the map looked
+       ragged (Jeremy's screenshot);
+     · 32px reserves TWO lines at 11.5px/1.4 = 32.2px and then still owes the
+       card its 9px bottom padding — so every summary card clipped its own last
+       line, mid-word;
+     · the label estimate assumed uniform character width. Real text at
+       `overflow-wrap:anywhere` wraps sooner than 6.4px/char predicts, so long
+       labels silently lost their third line to the clamp.
+   Estimating a box for text you have not measured is the bug. This measures.
 
-   [deviation from Giga] the WIDTH is sized to the label instead of Giga's fixed
-   150/196 px. Giga can afford a fixed width because .metro-lab ellipsises and the
-   full name is one hover away; here the station name IS the thing being recalled,
-   and "Chemoreceptors in the carotid and aor…" is not a station name. Capped
-   narrower on a phone, where a 2300-px map fitted to 375 px lands at 0.16 scale —
-   a picture of a map rather than a map. */
+   WHERE THE DEFINITIONS WENT. The glossary definitions median 129 characters and
+   run to 257. Two clamped lines of a 129-character definition is a sentence
+   fragment, not a definition — the card was never going to hold one honestly. So
+   the definition moved to the READOUT, which opens on the same tap that lights
+   the route and has the room to print it whole. The card carries the concept
+   NAME, in full, always — because the name is the thing being recalled.
+
+   Same reasoning retires the interchange count badge: an interchange is already
+   legible from its ring and its fatter dot, the exact number is readout material,
+   and a variable-width badge in the head row would make the label wrap
+   differently on interchanges than everywhere else. Uniform means uniform. */
 const narrow=()=>innerWidth<560;
-function metroDim(n){
-  const L=(n&&n.label||'').length;
-  // The cap has to stay under colGap or two columns of cards collide.
-  const cap=narrow()?164:224, ch=narrow()?6.0:6.4;
-  const w=Math.min(cap,Math.max(150,42+L*ch));   // 150 = Giga's chip width exactly
-  const per=Math.max(5,Math.floor((w-42)/ch));   // 42 = dot + gap + the 11px paddings
-  const rows=Math.min(3,Math.max(1,Math.ceil(L/per)));   // .metro-lab clamps at 3
-  return {w:w, h:46+(rows-1)*15+((n&&n.summary)?32:0)};
-  // 46 = Giga's chip tier · 46+32 = 78 = Giga's chip+summary tier. Extra label
-  // rows add one 15px line each (see the .metro-lab deviation).
+const CARD_W=()=>narrow()?150:200;
+/* Content width available to .metro-lab = card − (11+11 padding) − 9 dot − 8 gap.
+   Kept next to the CSS it mirrors; if .metro-chead's padding changes, change it. */
+const LAB_W=()=>CARD_W()-22-9-8;
+
+/* Measure every label at the real width, in one batch, using the real class —
+   so the number the layout reserves is the number the browser will use. One
+   offscreen node, reused; ~20 labels per topic, so the single reflow is free. */
+let MEAS=null;
+function measureLabels(labels,w){
+  if(!MEAS){
+    MEAS=document.createElement('div');
+    MEAS.className='metro-meas'; MEAS.setAttribute('aria-hidden','true');
+    document.body.appendChild(MEAS);
+  }
+  MEAS.innerHTML=labels.map(l=>`<div class="metro-lab" style="width:${w}px">${esc(l)}</div>`).join('');
+  const out={}, kids=MEAS.children;
+  /* max(offsetHeight, scrollHeight), NOT offsetHeight. offsetHeight reports the
+     LINE BOX — n × line-height — but at 12.5px in a 15px line box the font's own
+     ascender/descender is 16px, so the ink overflows the box by 1px per block and
+     .metro-card's overflow:hidden shaves the bottom of the last line. Invisible
+     in a screenshot, obvious the moment you look for a clipped descender.
+     scrollHeight is the height the ink actually needs; take whichever is bigger. */
+  labels.forEach((l,i)=>{ out[l]=Math.max(kids[i].offsetHeight,kids[i].scrollHeight); });
+  MEAS.innerHTML='';
+  return out;
+}
+/* The map's single card size: tall enough for its own longest label, so nothing
+   on it is ever cut. A topic of one-line names gets a map of small tidy cards; a
+   topic carrying "Chemoreceptors in the carotid and aortic bodies" gets slightly
+   taller ones — but uniformly, across that whole map. */
+function metroSize(labels){
+  const w=CARD_W(), h=measureLabels(labels,LAB_W());
+  let tallest=15;                                   // one .metro-lab line
+  labels.forEach(l=>{ if(h[l]>tallest) tallest=h[l]; });
+  return {w:w, h:Math.max(46,tallest+16)};          // 16 = .metro-chead 8px top + 8px bottom
 }
 
 const MT={};   // per-topic view state, so panning survives a re-render
@@ -3018,9 +3331,12 @@ function mountMetro(tid){
   // previous mount appended or it stacks up copy on copy.
   stage.querySelectorAll('.metro-readout,.metro-empty').forEach(el=>el.remove());
   const g=metroGraph(tid);
+  /* One measured size for every card on this map (see metroSize). Measuring
+     before layout is what lets the engine reserve the card's REAL height. */
+  const SZ=metroSize(g.nodes.map(n=>n.label));
   const L=metroLayout(g.nodes,g.edges,
     {colGap:narrow()?190:260, rowGap:narrow()?18:26, originX:narrow()?58:80,
-     originY:narrow()?38:56, dimOf:metroDim});
+     originY:narrow()?38:56, dimOf:()=>SZ});
   if(!L.stations.length){
     vp.innerHTML='';
     stage.insertAdjacentHTML('beforeend','<div class="metro-empty"><b>Empty map</b><p>No relations are authored for this topic yet.</p></div>');
@@ -3029,7 +3345,7 @@ function mountMetro(tid){
   const mast=stationMastery(tid);
   const sum=summaryOf(tid);
   const flashSet=new Set();
-  (LINKS[tid]||[]).forEach(l=>{ if(FLASH.indexOf(linkKey(l))>=0){ flashSet.add(l[0]); flashSet.add(l[2]); } });
+  linksOf(tid).forEach(l=>{ if(FLASH.indexOf(linkKey(l))>=0){ flashSet.add(l[0]); flashSet.add(l[2]); } });
 
   // colour each station by the first line that touches it
   const colorOf={}, nodeLines={};
@@ -3060,14 +3376,12 @@ function mountMetro(tid){
     + segs.map(s=>`<path class="metro-edge" data-li="${s.li}" d="${s.d}" stroke="${s.color}"/>`).join('')
     + `</svg>`
     + L.stations.map(s=>{
-        const m=mast[s.id]||0, d=sum[s.id]||'';
+        const m=mast[s.id]||0;
         return `<div class="metro-card${s.interchange?' xchg':''}${m>0.02?' lit':''}${flashSet.has(s.id)?' strengthened':''}"
           role="button" tabindex="0" data-st="${escA(s.id)}"
           style="left:${s.x}px;top:${s.y}px;width:${s.w}px;height:${s.h}px;
           --ac:${colorOf[s.id]||'var(--acc-tx)'};--mastery:${m.toFixed(2)}">
-          <div class="metro-chead"><span class="metro-dot"></span><span class="metro-lab">${esc(s.label)}</span>${
-          s.interchange?`<span class="metro-badge">${s.lineCount}</span>`:''}</div>${
-          d?`<div class="metro-csum">${esc(d)}</div>`:''}</div>`;
+          <div class="metro-chead"><span class="metro-dot"></span><span class="metro-lab">${esc(s.label)}</span></div></div>`;
       }).join('');
 
   const pct=$('#mtpct-'+tid);
@@ -3110,12 +3424,20 @@ function mountMetro(tid){
       if(e.source===active) outs.push({lab:e.target,verb:e.verb});
     });
     const c=colorOf[active]||'var(--acc-tx)';
+    /* The definition lives HERE, not on the card — full text, nothing clipped.
+       Shown only where the topic glossary genuinely defines this concept; a
+       concept with no entry simply gets no definition block rather than a
+       plausible-looking sentence. Same rule as the readiness bars. */
+    const def=sum[active]||'';
+    const nRoutes=(nodeLines[active]||[]).length;
     readout.className='metro-readout'+(pinned?' pinned':'');
     readout.innerHTML=
       (pinned?`<button class="metro-rclose" data-x="1" aria-label="Unpin readout">✕</button>`:'')
       +(ins.length?`<div class="metro-rfrom"><div class="metro-rglbl">leads in</div><ul class="metro-tree">`+ins.map(x=>
         `<li><div class="metro-trow"><span class="metro-tlabel">${esc(x.lab)}</span><span class="metro-tverb">${esc(x.verb)}</span><span class="metro-tarrow" style="color:${c}">→</span></div></li>`).join('')+`</ul></div>`:'')
-      +`<div class="metro-rroot"><span class="metro-rdot" style="background:${c};box-shadow:0 0 8px ${c}"></span>${esc(active)}</div>`
+      +`<div class="metro-rroot"><span class="metro-rdot" style="background:${c};box-shadow:0 0 8px ${c}"></span>${esc(active)}${
+        nRoutes>1?`<span class="metro-rroutes">on ${nRoutes} routes</span>`:''}</div>`
+      +(def?`<div class="metro-rdef">${esc(def)}</div>`:'')
       +(outs.length?`<ul class="metro-tree">`+outs.map(x=>
         `<li><div class="metro-trow"><span class="metro-tverb">${esc(x.verb)}</span><span class="metro-tarrow" style="color:${colorOf[x.lab]||c}">→</span><span class="metro-tlabel">${esc(x.lab)}</span></div></li>`).join('')+`</ul>`
         :`<div class="metro-rleaf">Nothing leads out of here — it is an end of the line.</div>`);
@@ -3148,13 +3470,33 @@ function mountMetro(tid){
      ⊡ is the explicit override — press it and you get the whole thing however
      small, because sometimes you do just want the shape. */
   const FLOOR=0.8;                       // 12.5px label × 0.8 ≈ 10px on screen
-  /* A station is CENTRED on its layout point, and metroDim can hand back a card
-     wider than 2×originX — so the content box starts slightly LEFT of 0 and the
+  /* A station is CENTRED on its layout point, and the card can be wider than
+     2×originX — so the content box starts slightly LEFT of 0 and the
      first column gets shaved if you fit to 0..L.width. Fit to the real box. */
   const ox=Math.min(0,...L.stations.map(s=>s.x-s.w/2));
   const oy=Math.min(0,...L.stations.map(s=>s.y-s.h/2));
   const boxW=L.width-ox, boxH=L.height-oy;
+  /* Size the PANEL to the map before fitting the map to the panel.
+     A route is a horizontal chain, so a topic built around one long route lays
+     out as a ribbon — cvs2's core map is 3480×230. Scaled to the stage width
+     that is 117px of content in a 518px panel, i.e. 400px of empty background,
+     and the reader assumes something failed to load. Core made this the common
+     case rather than the odd one, because a two-route map is nearly always a
+     ribbon. So: work out how tall the map will actually BE once it is fitted to
+     the width, and clamp the panel to that. Bounds keep a huge map scrollable
+     and a tiny one from looking like a toolbar. Skipped once the player has
+     panned or zoomed — at that point the panel is a window they are aiming. */
+  const H_MIN=narrow()?200:240, H_MAX=narrow()?420:520;
+  function autoHeight(force){
+    if(!force&&(st.moved||stage.classList.contains('fs'))) return;
+    if(stage.classList.contains('fs')) return;
+    const availW=stage.clientWidth-20;
+    if(!(availW>0)||!(boxW>0)) return;
+    const k=Math.min(1.15,Math.max(FLOOR,availW/boxW));
+    stage.style.height=Math.max(H_MIN,Math.min(H_MAX,Math.round(boxH*k)+20))+'px';
+  }
   const fit=whole=>{
+    autoHeight();
     const availW=stage.clientWidth-20, availH=stage.clientHeight-20;
     const raw=Math.min(availW/boxW,availH/boxH);
     const lo=whole?0.14:FLOOR;
@@ -3164,6 +3506,12 @@ function mountMetro(tid){
     else { st.x=x0; st.y=y0+Math.max(0,(availH-boxH*st.k)/2); }
     st.fitted=true; st.moved=false; apply();
   };
+  /* The panel height is inline, and draw() rebuilds this element on every tab
+     change — while MT keeps `fitted` across mounts. So the height has to be set
+     on EVERY mount (forced past the st.moved guard, which is about the
+     transform, not the panel), or a revisited topic silently reverts to the CSS
+     default and the dead space comes back. */
+  autoHeight(true);
   if(!st.fitted) fit(false); else apply();
 
   /* ── full screen ──────────────────────────────────────────────────────────
@@ -3180,6 +3528,9 @@ function mountMetro(tid){
   const setFs=(on,fromNative)=>{
     if(on===stage.classList.contains('fs')) return;
     if(mt) mt.style.minHeight = on ? mt.offsetHeight+'px' : '';   // measure BEFORE it leaves the flow
+    // autoHeight's inline height would beat .metro-stage.fs's own sizing, so it
+    // is dropped on the way in and recomputed by the refit on the way out.
+    if(on) stage.style.height='';
     stage.classList.toggle('fs',on);
     document.documentElement.classList.toggle('metro-fs',on);
     if(fsBtn){
@@ -3245,11 +3596,37 @@ function mountMetro(tid){
   },{passive:false});
 }
 
+/* ── Core-mode progress ────────────────────────────────────────────────────
+   "Held" = a core relation you have recalled at least once at box ≥1. Not a
+   click-through, not a tick — the same SRS state the map's glow reads, so the
+   ring can never fill for time spent rather than recall done. */
+function coreHeld(tid){
+  const keep=coreIdx(tid), ls=LINKS[tid]||[];
+  let held=0, tot=0;
+  ls.forEach((l,i)=>{ if(!keep.has(i)) return; tot++;
+    const s=srsOf(linkKey(l)); if(s.last&&(s.box||0)>=1) held++; });
+  return {held:held,total:tot,pct:tot?Math.round(100*held/tot):0,done:tot>0&&held>=tot};
+}
+const coreDoneIds=()=>(DATA.topics||[]).filter(t=>coreHeld(t.id).done).map(t=>t.id);
+// the ONE next thing to do: first topic in course order whose spine isn't held
+function nextCoreTopic(){
+  return (DATA.topics||[]).find(t=>!coreHeld(t.id).done)||null;
+}
+/* A topic "unlocks" Full when its own spine is held. Unlocked is a REWARD flag
+   only — it changes what the page CELEBRATES, never what it permits. Every
+   Core topic page carries a working "open the full version" link regardless. */
+const UNLOCKED=jget('unlocked',{});
+function checkUnlock(tid){
+  if(UNLOCKED[tid]||!coreHeld(tid).done) return false;
+  UNLOCKED[tid]=Date.now(); jset('unlocked',UNLOCKED); return true;      // newly earned
+}
+
 /* ── a topic page: Learn it → See it → Test it ── */
 function topicView(t){
+  if(isCore()) return coreTopicView(t);
   const chains=chainsOf(t.id), now=Date.now();
   const dueN=chains.filter(c=>c.due<=now).length;
-  const links=LINKS[t.id]||[];
+  const links=linksOf(t.id);
   const held=links.filter(l=>srsOf(linkKey(l)).last).length;
 
   const gloss=(t.glossary||[]).map(g=>
@@ -3337,6 +3714,66 @@ function topicView(t){
   </div>`;
 }
 
+/* ── the SAME topic, in Core ───────────────────────────────────────────────
+   Four things, in one column, in order: what this is → the gist → the map →
+   drill it. Everything else on the Full page (objectives, the glossary table,
+   the nursing notes, the lecturer's SAQs, the recognition MCQs) is not
+   collapsed here — it is absent, and the foot of the page says so and links to
+   it. A closed <details> is still a decision you have to make; an honest
+   sentence about what is being held back is not. */
+function coreTopicView(t){
+  const chains=chainsOf(t.id), now=Date.now();
+  const dueN=chains.filter(c=>c.due<=now).length;
+  const p=coreHeld(t.id);
+  const nRoutes=chains.length;
+  const nxt=nextCoreTopic();
+  const isNext=nxt&&nxt.id===t.id;
+  const hidden=allLinksN(t.id)-coreLinksN(t.id);
+  return `
+  <div class="card">
+    <div class="coreCrumb">${isNext?'<span class="nowChip">▶ Start here</span>':''}
+      <span class="modeTag">Core</span></div>
+    <h2>${t.icon} ${esc(t.name)}</h2>
+    <div class="big-idea">${gl(t.tagline)}</div>
+    <div class="eyebrow">📖 The short version</div>
+    <p class="coreGist">${t.gist}</p>
+  </div>
+
+  <div class="card">
+    <h2>👁️ See it</h2>
+    <div class="big-idea">${nRoutes} pathway${nRoutes===1?'':'s'}, ${p.total} link${p.total===1?'':'s'}.
+      Concepts are <b>stations</b>; each pathway is its own coloured <b>line</b>. Tap a station to light
+      its route and read what connects to it.</div>
+    ${metroHtml(t.id)}
+  </div>
+
+  <div class="card">
+    <h2>📋 Test it</h2>
+    <div class="coreProg">
+      <div class="coreBar"><i style="width:${p.pct}%"></i></div>
+      <div class="coreProgTx"><b>${p.held} of ${p.total}</b> links recalled at least once${
+        p.done?' — <b class="ok">spine complete</b>':''}</div>
+    </div>
+    <div class="ctarow">
+      <button class="cta" data-drill="${t.id}">⚡ Drill what's due (${dueN||nRoutes})</button>
+      <button class="cta ghost" data-drill="${t.id}" data-all="1">Drill all ${nRoutes}</button>
+    </div>
+    ${p.done?`<div class="coreWin">
+      <b>🎉 You've got the spine of this topic.</b>
+      <p>The full version of ${esc(t.name)} adds ${hidden} more relation${hidden===1?'':'s'},
+      the glossary, the lecturer's own questions and the nursing notes.</p>
+      <button class="cta" data-full="${t.id}">Open the full version of this topic →</button>
+      ${nxt?`<p class="coreNextTx">Or carry on to <b>${nxt.icon} ${esc(nxt.name)}</b>.</p>`:
+            `<p class="coreNextTx">That's every topic's spine held. Full mode is where the rest lives.</p>`}
+    </div>`:`<div class="coreEsc">
+      <p>Core shows the ${p.total} links that carry this topic. Full adds ${hidden} more,
+      plus the glossary, the lecturer's own questions, the nursing notes and the case studies.</p>
+      <button class="linkbtn" data-full="${t.id}">I want the full version now →</button>
+      <span class="coreEscNote">Nothing is locked — you keep all your progress either way.</span>
+    </div>`}
+  </div>`;
+}
+
 /* ── the case studies page ── */
 function casesView(){
   const byId={}; (DATA.topics||[]).forEach(t=>byId[t.id]=t);
@@ -3363,12 +3800,67 @@ function casesView(){
   </div>`).join('');
 }
 
+/* ── Start Here, in Core: one page, one next action ────────────────────────
+   The Full start page opens with a four-column table of ten topics and a stats
+   grid. That is a dashboard, and a dashboard is the wrong first thing to hand
+   someone who has just come back from break and does not yet know what any of
+   it means. This page answers one question — what do I do now — and puts the
+   ledger underneath, small. */
+function coreStartView(){
+  const nxt=nextCoreTopic(), doneN=coreDoneIds().length, nT=(DATA.topics||[]).length;
+  const totCore=TOTAL_CORE(), totAll=TOTAL_LINKS();
+  let held=0; (DATA.topics||[]).forEach(t=>{ held+=coreHeld(t.id).held; });
+  const rows=(DATA.topics||[]).map(t=>{
+    const p=coreHeld(t.id), isN=nxt&&nxt.id===t.id;
+    return `<button class="coreRow${p.done?' done':''}${isN?' next':''}" data-t="${t.id}">
+      <span class="coreRowIc">${p.done?'✓':t.icon}</span>
+      <span class="coreRowNm">${esc(t.name)}${isN?'<span class="nowChip">Start here</span>':''}
+        <span class="coreRowSub">${p.held} of ${p.total} links</span></span>
+      <span class="coreRing" style="--p:${p.pct}"></span></button>`;
+  }).join('');
+  return `<div class="card">
+    <div class="coreCrumb"><span class="modeTag">Core</span></div>
+    <h2>🧭 Module 1, the short way</h2>
+    <div class="big-idea">Ten topics, each boiled down to the two pathways the rest of it hangs off.
+      Read the short version, look at the map, drill it. That's the whole loop.</div>
+    ${nxt?`<button class="cta coreBig" data-t="${nxt.id}">Start with ${nxt.icon} ${esc(nxt.name)} →</button>`
+         :`<div class="coreWin"><b>🎉 Every spine held — all ten topics.</b>
+            <p>That is the skeleton of Module 1 in your head. Everything else is detail hanging off it,
+            and it's all in Full mode: ${totAll-totCore} more relations, the glossary, the lecturer's own
+            questions and the five case studies.</p>
+            <button class="cta" data-mode="full">Switch to Full mode →</button></div>`}
+    <div class="coreProg" style="margin-top:14px">
+      <div class="coreBar"><i style="width:${totCore?Math.round(100*held/totCore):0}%"></i></div>
+      <div class="coreProgTx"><b>${doneN} of ${nT}</b> topics complete ·
+        ${held} of ${totCore} core links recalled at least once</div>
+    </div>
+    <div class="coreRows">${rows}</div>
+    <div class="ctarow" style="margin-top:14px">
+      <button class="cta ghost" data-drill="*">⚡ Drill everything that's due</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>What Core leaves out</h2>
+    <p>Core is not a different or easier version of the course — it is the same relations, the same sources
+    and the same progress, with the branches deferred. It shows <b>${totCore} of the ${totAll}</b> authored
+    relations, and while you are in Core the ⚡ Study button on the hub is bid only those, so it can't quiz
+    you on something you were never shown.</p>
+    <p class="note">Held back until you switch: ${totAll-totCore} further relations, the ${
+      (DATA.topics||[]).reduce((s,t)=>s+(t.recall||[]).length,0)} written questions with their marking points,
+    the ${(DATA.topics||[]).reduce((s,t)=>s+(t.mcq||[]).length,0)} recognition checks, every topic's glossary
+    and nursing notes, and all ${(DATA.cases||[]).length} case studies.</p>
+    <div class="ctarow"><button class="cta ghost" data-mode="full">Switch to Full mode</button></div>
+  </div>`;
+}
+
 /* ── Start Here ── */
 function startView(){
+  if(isCore()) return coreStartView();
   const now=Date.now();
   let allLinks=0, allDue=0, allHeld=0, allChains=0, allDueChains=0;
   const rows=(DATA.topics||[]).map(t=>{
-    const ls=LINKS[t.id]||[], cs=chainsOf(t.id);
+    const ls=linksOf(t.id), cs=chainsOf(t.id);
     const due=ls.filter(l=>dueAt(srsOf(linkKey(l)))<=now).length;
     const held=ls.filter(l=>srsOf(linkKey(l)).last).length;
     allLinks+=ls.length; allDue+=due; allHeld+=held;
@@ -3477,6 +3969,22 @@ function draw(){
   });
   $('#view').querySelectorAll('[data-drill]').forEach(el=>{
     el.onclick=()=>startDrill(el.dataset.drill, el.dataset.all==='1');
+  });
+  // Core: jump to a topic (rows, "start with X"), and the escape hatches
+  $('#view').querySelectorAll('[data-t]').forEach(el=>{
+    el.onclick=()=>{ view=el.dataset.t; jset('tab',view); draw(); window.scrollTo(0,0); };
+  });
+  $('#view').querySelectorAll('[data-mode]').forEach(el=>{
+    el.onclick=()=>{ setMode(el.dataset.mode);
+      if(!isCore()){} else if(view==='cases') view='start';
+      draw(); pulse(); window.scrollTo(0,0); };
+  });
+  /* The escape hatch: switch to Full AND land on the topic you were reading.
+     Switching mode but dumping you on Start Here would make "open the full
+     version of this topic" a lie. */
+  $('#view').querySelectorAll('[data-full]').forEach(el=>{
+    el.onclick=()=>{ setMode('full'); view=el.dataset.full; jset('tab',view);
+      draw(); pulse(); window.scrollTo(0,0); };
   });
   $('#view').querySelectorAll('.selfg').forEach(g=>{
     g.querySelectorAll('[data-g]').forEach(b=>{
@@ -3698,7 +4206,19 @@ function openDrill(queue){
    would consume FLASH on the first pass and the links you just strengthened
    would never light up on the map you actually land on. */
 (function(){ const t=new URLSearchParams(location.search).get('tab');
-  if(t&&TABS().some(x=>x.id===t)){ view=t; jset('tab',t); } })();
+  /* Resolved against the FULL tab list, not the mode-filtered one: a deep link
+     to ?tab=cases from the hub or a bookmark must work, and the honest response
+     to "take me to the case studies" is to take you there — so Core steps aside
+     for the tab it does not list rather than silently redirecting to Start. */
+  const all=[{id:'start'},{id:'cases'}].concat((DATA.topics||[]).map(x=>({id:x.id})));
+  if(t&&all.some(x=>x.id===t)){
+    view=t; jset('tab',t);
+    if(t==='cases'&&isCore()) setMode('full');
+  } })();
+/* First visit: MODE is null, so ask before drawing anything. Everything still
+   renders behind the sheet (Full is the fallback view), so a dismissed or
+   mis-tapped chooser leaves a working app, not a blank page. */
+if(MODE===null){ MODE='full'; showModeChooser(false); }
 draw();
 pulse();
 addEventListener('visibilitychange',()=>{ if(document.visibilityState==='hidden') pulse(); });
