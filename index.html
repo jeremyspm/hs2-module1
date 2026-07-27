@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
 <meta name="theme-color" content="#161719"/>
 <meta name="robots" content="noindex"/>
-<title>Module 1 — Health Science 2</title>
+<title>Module 1 Hub — Health Science 2</title>
 <style>
 /* ── house palette: Giga's Liquid theme (see estate DESIGN-SYSTEM.md). Values
    are Giga's; only the scope selectors are remapped. ── */
@@ -57,12 +57,41 @@ header{position:sticky;top:0;z-index:30;background:var(--bg);border-bottom:1px s
   display:inline-flex;align-items:center;justify-content:center;font-size:15px;color:var(--tx2);
   flex:0 0 auto;padding:0 10px;text-decoration:none;transition:.15s}
 .iconbtn:hover{border-color:var(--acc);color:var(--tx)}
-.tabs{max-width:var(--maxw);margin:0 auto;display:flex;flex-wrap:wrap;gap:6px;padding:0 16px 10px}
+.tabbar{max-width:var(--maxw);margin:0 auto;display:flex;align-items:center;gap:6px;padding:0 16px 10px}
+.tabs{display:flex;flex-wrap:wrap;gap:6px;flex:1;min-width:0}
 .tab{display:inline-flex;align-items:center;gap:6px;min-height:40px;padding:0 12px;border-radius:10px;
-  background:var(--card);border:1px solid var(--line);color:var(--tx2);font-size:12.5px;font-weight:700;transition:.13s}
+  background:var(--card);border:1px solid var(--line);color:var(--tx2);font-size:12.5px;font-weight:700;
+  flex:0 0 auto;white-space:nowrap;transition:.13s}
 .tab:hover{border-color:var(--line2);color:var(--tx)}
 .tab.on{background:var(--acc);border-color:var(--acc);color:#fff}
 .tab .dot{width:6px;height:6px;border-radius:50%;background:var(--good);flex:0 0 auto}
+/* The index button only exists where the strip stops being a full list — see
+   the rail rules below. */
+.tabAll{display:none}
+
+/* ── the tab RAIL on narrow screens ───────────────────────────────────────
+   Twelve chips wrapped is seven rows, and a sticky header seven rows tall ate
+   most of a phone screen before a word of the topic showed. So on a phone the
+   strip stops wrapping: one row that scrolls sideways, always centred on where
+   you are, with ☰ beside it for the whole list at once. Header cost drops from
+   ~60% of the viewport to two rows. */
+@media(max-width:760px){
+  .tabbar{gap:8px;padding:0 12px 8px}
+  .tabs{flex-wrap:nowrap;overflow-x:auto;overscroll-behavior-x:contain;
+    scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch;
+    scrollbar-width:none;padding-bottom:1px}
+  .tabs::-webkit-scrollbar{display:none}
+  /* An edge fades only while there is something past it — a permanent fade
+     would dim the selected chip whenever the rail is parked at its end. */
+  .tabs.fadeL{-webkit-mask-image:linear-gradient(to right,transparent,#000 20px);
+    mask-image:linear-gradient(to right,transparent,#000 20px)}
+  .tabs.fadeR{-webkit-mask-image:linear-gradient(to right,#000 calc(100% - 20px),transparent);
+    mask-image:linear-gradient(to right,#000 calc(100% - 20px),transparent)}
+  .tabs.fadeL.fadeR{-webkit-mask-image:linear-gradient(to right,transparent,#000 20px,#000 calc(100% - 20px),transparent);
+    mask-image:linear-gradient(to right,transparent,#000 20px,#000 calc(100% - 20px),transparent)}
+  .tab{scroll-snap-align:center;min-height:38px;font-size:12px;padding:0 11px}
+  .tabAll{display:inline-flex}
+}
 
 /* ── CORE MODE ────────────────────────────────────────────────────────────
    Core is not a skin — it is a smaller page. So there is very little here:
@@ -149,6 +178,16 @@ header{position:sticky;top:0;z-index:30;background:var(--bg);border-bottom:1px s
 .stModeB .why{margin:5px 0 0;font-size:12.5px;color:var(--tx2);line-height:1.5}
 .stModeB .meta{margin:8px 0 0;font-size:11.5px;font-weight:700;color:var(--acc-tx);letter-spacing:.2px;line-height:1.45}
 @media(max-width:520px){ .stModeB{padding:14px} .sheet{padding:18px} }
+/* ── the topic index sheet ────────────────────────────────────────────────
+   What ☰ opens on a phone: the whole strip as a list, in course order. It
+   borrows Core's rows wholesale (.coreRow*) so the two lists of topics in this
+   hub are visibly the same list. */
+.pickList{max-height:min(62vh,520px);overflow-y:auto;margin:0 -4px;padding:0 4px}
+.coreRow.cur{border-color:var(--acc);background:color-mix(in srgb,var(--acc) 12%,var(--card2))}
+.coreRow.cur .coreRowNm{color:var(--tx)}
+.pickHere{font-size:10px;font-weight:800;letter-spacing:.6px;text-transform:uppercase;
+  color:var(--acc-tx);flex:0 0 auto}
+.coreRow .dot{width:6px;height:6px;border-radius:50%;background:var(--good);flex:0 0 auto}
 
 /* ---- cards ---- */
 .card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:18px 18px;margin:0 0 14px}
@@ -618,12 +657,15 @@ html.metro-fs,html.metro-fs body{overflow:hidden}
 <header>
   <div class="top">
     <a class="iconbtn" href="https://jeremyspm.github.io/" title="Back to the BN Hub">←</a>
-    <div class="brand">Module 1<small>Health Science 2 · 722.541</small></div>
+    <div class="brand">Module 1 Hub<small>Health Science 2 · 722.541</small></div>
     <div style="flex:1"></div>
     <button class="modeBtn" id="modeBtn" title="Core or Full — switch any time, nothing is lost">Full</button>
     <button class="iconbtn" id="btnTheme" title="Light / dark">◐</button>
   </div>
-  <nav class="tabs" id="tabs"></nav>
+  <div class="tabbar">
+    <nav class="tabs" id="tabs" aria-label="Topics"></nav>
+    <button class="iconbtn tabAll" id="btnTopics" title="All topics" aria-label="All topics">☰</button>
+  </div>
 </header>
 <div class="wrap" id="view"></div>
 <div class="foot">
@@ -676,7 +718,7 @@ const DATA={ topics:[
 
 /* ────────────────────────────── CVS 1 ────────────────────────────── */
 {
- id:'cvs1', icon:'🩸', name:'Blood Vessels & Circulation', chapters:'Patton ch. 29 · CVS 1',
+ id:'cvs1', icon:'🩸', name:'Blood Vessels & Circulation', short:'Blood Vessels', chapters:'Patton ch. 29 · CVS 1',
  tagline:'One closed loop, two circuits, three kinds of pipe — and the whole point of all of it happens in the capillary.',
  gist:`Your heart pumps blood around a <b>closed loop</b> that never opens: out through <b>arteries</b> (thick walls, high pressure), back through <b>veins</b> (thin walls, low pressure). Between them sit the <b>capillaries</b>, one cell thick — and that thinness is the point, because the capillary is where the whole system actually delivers anything. At the start of a capillary the pump's push (<b>hydrostatic pressure</b>) is winning, so fluid is squeezed OUT to the tissue; by the end the push has faded and the proteins left behind in the blood pull fluid back IN (<b>oncotic pressure</b>).`,
  primer:`The cardiovascular system is a <b>pump plus pipes</b>, and the lecture opens by naming its three jobs:
@@ -801,7 +843,7 @@ const DATA={ topics:[
 
 /* ────────────────────────────── CVS 2 ────────────────────────────── */
 {
- id:'cvs2', icon:'🫀', name:'The Heart & Blood Flow', chapters:'Patton ch. 28 & 30 · CVS 2',
+ id:'cvs2', icon:'🫀', name:'The Heart & Blood Flow', short:'The Heart', chapters:'Patton ch. 28 & 30 · CVS 2',
  tagline:'A double pump in a fibrous bag: two circuits that never mix, four valves that only open one way, and two sounds that tell you they shut.',
  gist:`The heart is really <b>two pumps side by side</b>: the right side sends blood to the lungs to pick up oxygen, the left side sends it to the rest of the body. Blood always travels the same one-way circuit — body → right side → lungs → left side → body — and it never mixes across the middle. <b>Four valves</b> enforce that one-way rule by slamming shut behind the blood, and the two sounds you hear through a stethoscope, <b>lub</b> and <b>dub</b>, are simply those valves closing.`,
  primer:`The heart sits in the <b>mediastinum</b> — the potential space between the lungs — and is wrapped in layers you have to
@@ -923,7 +965,7 @@ const DATA={ topics:[
 
 /* ────────────────────────────── CVS 3 ────────────────────────────── */
 {
- id:'cvs3', icon:'⚡', name:'Cardiac Physiology — conduction, ECG & output', chapters:'Patton ch. 9, 17 & 28 · CVS 3',
+ id:'cvs3', icon:'⚡', name:'Cardiac Physiology — conduction, ECG & output', short:'Cardiac Physiology', chapters:'Patton ch. 9, 17 & 28 · CVS 3',
  tagline:'The heart wires itself, times itself and reports itself — and CO = SV × HR is the sentence the rest of the module is written in.',
  gist:`The heart doesn't wait to be told to beat — it has its own pacemaker, the <b>SA node</b>, and the electrical signal spreads from there along a fixed path so the chambers squeeze in the right order. That electrical signal is what an <b>ECG</b> draws; the big spike is the ventricles firing. How much blood you actually move per minute is just <b>cardiac output = stroke volume × heart rate</b>: how much per beat, times how many beats — and almost everything that goes wrong with a patient changes one of those two numbers.`,
  primer:`Cardiac muscle is unlike any other muscle in the body, and two properties explain the whole topic.
@@ -1074,7 +1116,7 @@ const DATA={ topics:[
 
 /* ────────────────────────────── CVS 4 ────────────────────────────── */
 {
- id:'cvs4', icon:'🩺', name:'Regulation of Blood Pressure', chapters:'Patton ch. 30 · CVS 4',
+ id:'cvs4', icon:'🩺', name:'Regulation of Blood Pressure', short:'Blood Pressure', chapters:'Patton ch. 30 · CVS 4',
  tagline:'Two systems guard one number: nerves fix it in seconds, kidneys fix it over hours — and both work on BP = SV × HR × PR.',
  gist:`Blood pressure is guarded by two systems on completely different clocks. The fast one is a <b>reflex</b>: stretch sensors in your big arteries constantly report the pressure to your brainstem, and within seconds it speeds the heart up or slows it down to correct any drift. The slow one is the <b>kidneys</b>, which over hours release hormones that tighten the vessels and hold on to salt and water — more fluid in the pipes means more pressure.`,
  primer:`Blood pressure is <b>the pressure exerted by blood on the walls of the arteries</b>, written systolic/diastolic. Normal is
@@ -1221,7 +1263,7 @@ const DATA={ topics:[
 
 /* ────────────────────────────── SHOCK ────────────────────────────── */
 {
- id:'shock', icon:'🚨', name:'Circulatory Shock', chapters:'Patton ch. 30 · CVS 4 (self-directed)',
+ id:'shock', icon:'🚨', name:'Circulatory Shock', short:'Shock', chapters:'Patton ch. 30 · CVS 4 (self-directed)',
  tagline:'Not "low blood pressure" — inadequate blood flow to meet the needs of the tissue. Name the type by naming which term of BP = SV × HR × PR failed.',
  gist:`<b>Shock is not simply a low blood pressure.</b> It is blood flow so poor that tissue stops getting the oxygen it needs — cells switch to their emergency fuel supply, acid builds up, and organs start to fail. Blood pressure depends on three things: how much blood the heart pushes out per beat, how fast it beats, and how tight the vessels are — so name the type of shock by naming which of those three has failed. The commonest one, <b>hypovolaemic shock</b>, is simply not enough blood in the system.`,
  primer:`The lecture's definition is deliberately about <b>flow</b>, not about a number: circulatory shock is
@@ -1305,7 +1347,7 @@ const DATA={ topics:[
 
 /* ────────────────────────────── RESP 1 ────────────────────────────── */
 {
- id:'resp1', icon:'🌬️', name:'Respiratory Anatomy', chapters:'Patton ch. 35 · RESP 1',
+ id:'resp1', icon:'🌬️', name:'Respiratory Anatomy', short:'Resp Anatomy', chapters:'Patton ch. 35 · RESP 1',
  tagline:'One tube that cleans, warms, moistens and talks — ending in 300 million bubbles one cell thick.',
  gist:`Air takes one fixed path in: nose → throat → voice box → windpipe → branching tubes → the lungs. On the way down that tube <b>warms, moistens and filters</b> the air, which is why breathing through your nose beats breathing through your mouth. At the very end are about 300 million tiny air sacs, the <b>alveoli</b> — and like the capillary, each one is a single cell thick, so oxygen has almost no distance to cross to reach the blood.`,
  primer:`Respiration is <b>four distinct processes</b>, and confusing them is the most common way to lose marks in this module.
@@ -1444,7 +1486,7 @@ const DATA={ topics:[
 
 /* ────────────────────────────── RESP 2 ────────────────────────────── */
 {
- id:'resp2', icon:'💨', name:'Ventilation & External Respiration', chapters:'Patton ch. 35 & 36 · RESP 2',
+ id:'resp2', icon:'💨', name:'Ventilation & External Respiration', short:'Ventilation', chapters:'Patton ch. 35 & 36 · RESP 2',
  tagline:'Breathing is Boyle\'s law with muscles attached; gas exchange is diffusion down a partial-pressure gradient. Nothing is pumped.',
  gist:`Breathing in is <b>muscular work</b>: your diaphragm drops, your chest expands, and making the space bigger drops the pressure inside it — so air falls in on its own to even things up. Breathing out at rest costs you nothing; you simply relax and the stretched lung springs back. Once air is in the alveoli, nothing pumps the oxygen across — it simply <b>drifts from where there is more of it to where there is less</b>, which is why it moves into blood and carbon dioxide moves out.`,
  primer:`Pulmonary ventilation is a <b>mechanical</b> process, and the whole of it falls out of <b>Boyle's law</b>: at constant
@@ -1581,7 +1623,7 @@ const DATA={ topics:[
 
 /* ────────────────────────────── RESP 3 ────────────────────────────── */
 {
- id:'resp3', icon:'🔄', name:'Gas Transport & Acid–Base', chapters:'Patton ch. 36 · RESP 3',
+ id:'resp3', icon:'🔄', name:'Gas Transport & Acid–Base', short:'Gas Transport', chapters:'Patton ch. 36 · RESP 3',
  tagline:'Oxygen rides on haemoglobin; CO₂ mostly turns into bicarbonate — and that reaction is why your breathing sets your blood pH.',
  gist:`Oxygen barely dissolves in blood, so almost all of it is carried piggyback on <b>haemoglobin</b> inside red cells — it clips on in the lungs where oxygen is plentiful, and lets go in tissue where it is scarce. Carbon dioxide travels differently: most of it is converted into <b>bicarbonate</b>, and that conversion releases acid. That is the link worth holding on to — because CO₂ becomes acid, <b>how fast you breathe sets how acidic your blood is</b>: blow off more CO₂ and the blood turns alkaline, hold it in and the blood turns acidic.`,
  primer:`<b>Oxygen transport.</b> 98.5% of molecular oxygen is bound to haemoglobin as <b>oxyhaemoglobin (HbO₂)</b> inside red
@@ -1740,7 +1782,7 @@ const DATA={ topics:[
 
 /* ────────────────────────────── RESP 4 ────────────────────────────── */
 {
- id:'resp4', icon:'🧠', name:'Regulation of Breathing', chapters:'Patton ch. 36 · RESP 4',
+ id:'resp4', icon:'🧠', name:'Regulation of Breathing', short:'Breathing Control', chapters:'Patton ch. 36 · RESP 4',
  tagline:'The medulla has its own pacemaker, and CO₂ — not oxygen — is what it listens to hardest.',
  gist:`You don't decide to breathe — a group of cells in your <b>brainstem</b> fires rhythmically on its own and drives the diaphragm, which is why breathing carries on while you sleep. Sensors then adjust that rhythm based on the blood's chemistry. The counter-intuitive part, and the bit that gets tested: the strongest trigger is <b>not</b> a lack of oxygen but a rise in <b>carbon dioxide</b> — because rising CO₂ means rising acid, and your brain guards pH hardest.`,
  primer:`Breathing is involuntary but consciously modifiable for a short period. The normal rate is <b>12–20 breaths/min</b>, and
@@ -1877,7 +1919,7 @@ const DATA={ topics:[
 
 /* ────────────────────────────── LYMPHATIC ────────────────────────────── */
 {
- id:'lymph', icon:'🛡️', name:'The Lymphatic System', chapters:'Module 1.3 · Lymphatic system',
+ id:'lymph', icon:'🛡️', name:'The Lymphatic System', short:'Lymphatics', chapters:'Module 1.3 · Lymphatic system',
  tagline:'A one-way drain with no pump: it collects what the capillaries leak, checks it for invaders, and gives it back to the veins.',
  gist:`Capillaries leak, always — a little more fluid is pushed out into your tissue than gets pulled back in. The <b>lymphatic system</b> is the drain that collects that leftover fluid and returns it to your veins, so it never builds up. It is a <b>one-way</b> system with <b>no pump</b>: it relies on your ordinary movement and muscle squeeze to shift the fluid along. On the way it routes everything through <b>lymph nodes</b>, which is where your immune system inspects it — and it is why a blocked or removed set of nodes causes swelling in the limb they used to drain.`,
  primer:`The lymphatic system is an organ system that <b>helps collect excess interstitial fluid from tissues and transport that
@@ -3116,9 +3158,13 @@ const DONE=jget('done',{});
 /* Case Studies are whole-topic synthesis questions spanning four topics at a
    time — genuinely the last thing you should meet, so Core does not list them.
    (A deep link straight to ?tab=cases still resolves; see BOOT.) */
+/* `short` is what the strip shows — a chip is a signpost, and on a phone the
+   strip is one scrolling row, where "Cardiac Physiology — conduction, ECG &
+   output" costs a whole screen-width of swipe. `name` still leads every topic
+   page and the index sheet, so nothing is renamed, only abbreviated in transit. */
 const TABS=()=>[{id:'start',icon:'🧭',name:'Start Here'}]
-  .concat((DATA.topics||[]).map(x=>({id:x.id,icon:x.icon,name:x.name})))
-  .concat(isCore()?[]:[{id:'cases',icon:'📁',name:'Case Studies'}]);
+  .concat((DATA.topics||[]).map(x=>({id:x.id,icon:x.icon,name:x.name,short:x.short||x.name,sub:x.chapters})))
+  .concat(isCore()?[]:[{id:'cases',icon:'📁',name:'Case Studies',short:'Cases'}]);
 
 function tabs(){
   /* In Core the tab strip doubles as the progress map: a ✓ replaces the icon on
@@ -3126,21 +3172,96 @@ function tabs(){
      (Full's "I've worked through this" tick) is a self-report, so it stays out
      of Core, where the ✓ has to mean recall. */
   $('#tabs').innerHTML=TABS().map(x=>{
-    if(!isCore()) return `<button class="tab${view===x.id?' on':''}" data-t="${x.id}">${x.icon} ${esc(x.name)}${
+    const lbl=esc(x.short||x.name), ttl=escA(x.name);
+    if(!isCore()) return `<button class="tab${view===x.id?' on':''}" data-t="${x.id}" title="${ttl}">${x.icon} ${lbl}${
       DONE[x.id]?'<span class="dot"></span>':''}</button>`;
     const isTopic=(DATA.topics||[]).some(t=>t.id===x.id);
     const p=isTopic?coreHeld(x.id):null;
     const nxt=nextCoreTopic();
     return `<button class="tab${view===x.id?' on':''}${p&&p.done?' cdone':''}${
-      nxt&&nxt.id===x.id?' cnext':''}" data-t="${x.id}">${
-      p&&p.done?'✓':x.icon} ${esc(x.name)}</button>`;
+      nxt&&nxt.id===x.id?' cnext':''}" data-t="${x.id}" title="${ttl}">${
+      p&&p.done?'✓':x.icon} ${lbl}</button>`;
   }).join('');
   $('#tabs').querySelectorAll('[data-t]').forEach(b=>{
     b.onclick=()=>{ view=b.dataset.t; jset('tab',view); draw(); window.scrollTo(0,0); };
   });
+  centreTab();
   const mb=$('#modeBtn');
   if(mb){ mb.textContent=isCore()?'Core':'Full'; mb.className='modeBtn '+(isCore()?'core':'full'); }
 }
+
+/* Where the strip is a rail (phones), the chip you are on has to be the one you
+   can see — otherwise every tap leaves the strip showing somewhere you aren't.
+   Measured off bounding rects, so it does not care what the offsetParent is,
+   and it no-ops on the wrapped desktop strip, which never overflows. */
+function centreTab(){
+  const strip=$('#tabs'); if(!strip) return;
+  const on=strip.querySelector('.tab.on');
+  if(on&&strip.scrollWidth>strip.clientWidth+1){
+    const s=strip.getBoundingClientRect(), r=on.getBoundingClientRect();
+    strip.scrollLeft += (r.left-s.left) - (s.width-r.width)/2;
+  }
+  railFade();
+}
+function railFade(){
+  const strip=$('#tabs'); if(!strip) return;
+  const more=strip.scrollWidth-strip.clientWidth;
+  strip.classList.toggle('fadeL', more>2 && strip.scrollLeft>2);
+  strip.classList.toggle('fadeR', more>2 && strip.scrollLeft<more-2);
+}
+
+/* ── the topic index ──────────────────────────────────────────────────────
+   The rail's other half: ☰ opens every topic at once, in course order, so
+   nothing is more than two taps away even when the strip is scrolled off.
+   Rows are Core's rows, and they carry Core's progress when Core is on. */
+function showTopicPicker(){
+  const core=isCore(), nxt=core?nextCoreTopic():null;
+  const rows=TABS().map(x=>{
+    const isTopic=(DATA.topics||[]).some(t=>t.id===x.id);
+    const p=core&&isTopic?coreHeld(x.id):null;
+    const sub=core&&p?`${p.held}/${p.total} spine relations held`
+      :(x.sub||(x.id==='start'?'The short way in':'Five whole-topic cases'));
+    return `<button class="coreRow${view===x.id?' cur':''}${p&&p.done?' done':''}${
+      !core&&DONE[x.id]?' done':''}" data-t="${x.id}">
+      <span class="coreRowIc">${p&&p.done?'✓':x.icon}</span>
+      <span class="coreRowNm">${esc(x.name)}<span class="coreRowSub">${esc(sub)}</span></span>
+      ${view===x.id?'<span class="pickHere">Here</span>'
+        :(nxt&&nxt.id===x.id?'<span class="pickHere">Next</span>'
+        :(!core&&DONE[x.id]?'<span class="dot"></span>':''))}
+    </button>`;
+  }).join('');
+  const m=document.createElement('div'); m.className='modal';
+  m.innerHTML=`<div class="sheet">
+    <span class="x" data-a="x">×</span>
+    <h3>Jump to a topic</h3>
+    <p class="lead">Module 1, in course order.</p>
+    <div class="pickList"><div class="coreRows" style="margin-top:0">${rows}</div></div>
+  </div>`;
+  const close=()=>{ m.remove(); document.removeEventListener('keydown',onKey); };
+  const onKey=e=>{ if(e.key==='Escape') close(); };
+  m.addEventListener('click',e=>{
+    if(e.target===m) return close();
+    if(e.target.closest('[data-a="x"]')) return close();
+    const el=e.target.closest('[data-t]'); if(!el) return;
+    close();
+    if(view===el.dataset.t) return;
+    view=el.dataset.t; jset('tab',view); draw(); window.scrollTo(0,0);
+  });
+  document.addEventListener('keydown',onKey);
+  document.body.appendChild(m);
+  /* Open on where you are, not on the top of the list — with twelve rows in a
+     capped box, "Here" is usually below the fold. */
+  const list=m.querySelector('.pickList'), cur=m.querySelector('.coreRow.cur');
+  if(list&&cur){
+    const lr=list.getBoundingClientRect(), cr=cur.getBoundingClientRect();
+    list.scrollTop += (cr.top-lr.top) - (lr.height-cr.height)/2;
+  }
+}
+$('#btnTopics').onclick=()=>showTopicPicker();
+$('#tabs').addEventListener('scroll',railFade,{passive:true});
+/* A rail that is re-centred only on tap would drift out of true when the phone
+   is turned; recentring on resize costs nothing and keeps the two in step. */
+addEventListener('resize',centreTab);
 
 /* ── the mode chooser ──────────────────────────────────────────────────────
    Shown once, on the first visit, and reachable forever after from the header
