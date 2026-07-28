@@ -30,9 +30,10 @@ const cut=src.indexOf('/* ══════════════════
 if(cut<0) { console.error('FAIL: could not find BOOT marker'); process.exit(1); }
 const body=src.slice(0,cut);
 
-const X=eval('(function(){'+body+'\nreturn {DATA,LINKS,ROUTES,chainsOf,metroGraph,metroLayout,CARD_W,LAB_W,offers,qid,mid,setMode,isCore,linksOf,routesOf,coreIdx,scopeOf,TOTAL_CORE,TOTAL_LINKS};})()');
+const X=eval('(function(){'+body+'\nreturn {DATA,LINKS,ROUTES,chainsOf,metroGraph,metroLayout,CARD_W,LAB_W,offers,qid,mid,setMode,isCore,linksOf,routesOf,coreIdx,scopeOf,TOTAL_CORE,TOTAL_LINKS,FIGS,IMGS,CREDITS,figsAll,figsOf,figById};})()');
 const {DATA,LINKS,ROUTES,chainsOf,metroGraph,metroLayout,CARD_W,LAB_W,offers,qid,mid,
-       setMode,isCore,linksOf,routesOf,coreIdx,scopeOf,TOTAL_CORE,TOTAL_LINKS}=X;
+       setMode,isCore,linksOf,routesOf,coreIdx,scopeOf,TOTAL_CORE,TOTAL_LINKS,
+       FIGS,IMGS,CREDITS,figsAll,figsOf,figById}=X;
 setMode('full');   // every section below §11 describes FULL mode; §11 flips it
 
 /* Station cards are now measured in the browser (metroSize → measureLabels), so
@@ -392,6 +393,102 @@ console.log(`  ${coreOff.length} offers, ${coreOff.reduce((s,o)=>s+o.cards.lengt
 setMode('full');
 if(isCore()) bad('setMode("full") did not restore Full mode');
 if(offers().length!==off.length) bad('Full mode offers changed after a round trip through Core');
+
+/* ── 12 ───────────────────────────────────────────────────────────────────
+   The figures. Two failure modes this exists to catch, both silent in a
+   browser: a raster whose base64 payload never made it into the build (you get
+   a broken frame, and only on the one topic you did not open), and a CC BY
+   image rendered without its credit — which is a licence breach, not a typo.
+   Also enforced: the 320-wide viewBox, because a wider one is the "picture of
+   a diagram" bug the metro map already paid for once. */
+console.log('\n=== 12. Figures ===');
+setMode('full');
+{
+  const topicIds=new Set((DATA.topics||[]).map(t=>t.id));
+  const seen=new Set();
+  let nSvg=0, nImg=0, bytes=0;
+
+  Object.keys(FIGS).forEach(tid=>{
+    if(!topicIds.has(tid)) bad(`FIGS has key "${tid}" which is not a topic`);
+    (FIGS[tid]||[]).forEach(f=>{
+      const w=(m)=>bad(`${tid} figure "${f.id||'(no id)'}": ${m}`);
+      if(!f.id) return w('has no id');
+      if(seen.has(f.id)) w('duplicate figure id');
+      seen.add(f.id);
+      if(!f.cap) w('has no caption');
+      if(!f.note) w('has no note — a figure with nothing to teach should not be here');
+      if(f.cap&&/&#\d+;|&[a-z]+;/.test(f.cap))
+        w('caption contains an HTML entity, but captions are esc()aped — use the literal character');
+      if(!!f.svg===!!f.img) w('must be exactly one of svg: or img:');
+
+      if(f.svg){
+        nSvg++;
+        const vb=/viewBox="0 0 (\d+) (\d+)"/.exec(f.svg);
+        if(!vb) w('svg has no "0 0 W H" viewBox');
+        else if(+vb[1]!==320) w(`viewBox is ${vb[1]} wide, must be 320 (see the .figs legibility note)`);
+        if(!/role="img"/.test(f.svg)) w('svg is missing role="img"');
+        if(!/aria-label="/.test(f.svg)) w('svg is missing aria-label');
+        // Figures render at ~0.92 scale on a 375px phone, so anything authored
+        // below 9px inks under 8.3px — the legibility floor, same lesson as §7.
+        [...f.svg.matchAll(/font-size="([\d.]+)"/g)].forEach(m=>{
+          if(+m[1]<9) w(`font-size="${m[1]}" is below the 9px floor (inks ${(+m[1]*0.92).toFixed(1)}px at 375px)`);
+        });
+        // every url(#id) must resolve to a marker/def DECLARED IN THE SAME svg:
+        // ids are global in the DOM, so a figure that borrows another figure's
+        // marker renders fine alone and breaks the moment both are on a page.
+        const ids=new Set([...f.svg.matchAll(/\sid="([^"]+)"/g)].map(m=>m[1]));
+        [...f.svg.matchAll(/url\(#([^)]+)\)/g)].forEach(m=>{
+          if(!ids.has(m[1])) w(`references url(#${m[1]}) but does not define it`);
+        });
+        [...ids].forEach(id=>{
+          const owners=Object.keys(FIGS).flatMap(k=>(FIGS[k]||[])
+            .filter(o=>o!==f&&o.svg&&new RegExp(`\\sid="${id}"`).test(o.svg)).map(o=>o.id));
+          if(owners.length) w(`svg id "${id}" is also defined by ${owners.join(', ')} — ids are global`);
+        });
+      }
+
+      if(f.img){
+        nImg++;
+        if(!f.alt) w('raster has no alt text');
+        const src=IMGS[f.img];
+        if(!src) w(`img:'${f.img}' has no payload in IMGS`);
+        else{
+          if(!/^data:image\/webp;base64,/.test(src)) w('payload is not a webp data URI');
+          bytes+=src.length;
+        }
+        if(!CREDITS[f.img]) w(`img:'${f.img}' has no CREDITS entry — CC BY requires attribution`);
+        else{
+          const c=CREDITS[f.img];
+          ['artist','lic','licurl','commons'].forEach(k=>{ if(!c[k]) w(`CREDITS.${f.img} has no ${k}`); });
+          if(c.lic&&!/^CC BY/.test(c.lic))
+            w(`licence "${c.lic}" is not a CC BY variant — re-check before shipping`);
+        }
+      }
+    });
+  });
+
+  // no orphan payloads: a megabyte of base64 nothing renders is dead weight
+  Object.keys(IMGS).forEach(k=>{ if(!seen.size||!Object.keys(FIGS).some(tid=>
+    (FIGS[tid]||[]).some(f=>f.img===k))) bad(`IMGS has orphan payload "${k}" — no figure uses it`); });
+  Object.keys(CREDITS).forEach(k=>{ if(!IMGS[k]) bad(`CREDITS has entry "${k}" with no image`); });
+
+  // every topic must actually have pictures, in BOTH modes
+  (DATA.topics||[]).forEach(t=>{
+    if(!figsAll(t.id).length) bad(`${t.id} has no figures at all`);
+  });
+  setMode('core');
+  (DATA.topics||[]).forEach(t=>{
+    const c=figsOf(t.id).length;
+    if(!c) bad(`${t.id} shows no figures in Core — mark at least one core:true`);
+    if(c===figsAll(t.id).length&&figsAll(t.id).length>2)
+      note(`${t.id}: Core shows all ${c} figures, so the "Core is showing N of M" line never appears`);
+  });
+  setMode('full');
+
+  console.log(`  ${nSvg} authored SVG + ${nImg} rasters across ${Object.keys(FIGS).length} topics`);
+  console.log(`  payload ${(bytes/1048576).toFixed(2)} MB base64 (${Object.keys(IMGS).length} images), `
+    +`all CC BY with credits`);
+}
 
 console.log('\n'+(fail?`❌ ${fail} FAILURES`:'✅ all invariants hold')+(warn?`  (${warn} notes)`:''));
 process.exit(fail?1:0);
