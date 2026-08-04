@@ -5292,8 +5292,13 @@ function checkUnlock(tid){
    navigator.onLine is false the list renders as plain text with an explanation
    rather than as links that will fail; a BOOT listener swaps it back live.
 
-   Core mode does not render this block at all. Core is a distillation, not a
-   collapse — see coreTopicView(). */
+   Core renders this too, REDUCED — the primary set only, chips for the core
+   routes only, and it says so out loud. The first cut left it out of Core
+   entirely on the theory that Core is a distillation rather than a collapse;
+   that was wrong. A returning player whose saved mode is Core got no block, no
+   explanation and no way to reach it, which is indistinguishable from the
+   feature being broken. figsCard() had already settled this question the right
+   way: render in both, reduce in Core, announce the reduction. */
 const VWATCH=jget('videos',{});          // { '<videoId>': timestamp } — see above
 const vSecs=d=>String(d).split(':').reduce((s,p)=>s*60+(+p||0),0);
 const vMins=l=>Math.round(l.reduce((s,v)=>s+vSecs(v.d),0)/60);
@@ -5317,12 +5322,13 @@ const vwText=t=>{
   const vs=VIDEOS[t.id]||[], n=vs.filter(v=>VWATCH[v.id]).length;
   return n?`${n} of ${vs.length} ticked as watched.`:'Nothing ticked as watched yet.';
 };
-/* Route coverage, computed by STRING EQUALITY against ROUTES and nothing else.
-   A `covers` value that matches no route is dropped without comment — renaming a
-   route must not be able to break this page. */
+/* Route coverage, computed by STRING EQUALITY against the routes THIS MODE shows
+   and nothing else. A `covers` value that matches no route is dropped without
+   comment — renaming a route must not be able to break this page, and Core must
+   not chip a route it never drew. */
 function vRoutes(tid){
   const vs=VIDEOS[tid]||[];
-  return (ROUTES[tid]||[]).map(r=>{
+  return routesOf(tid).map(r=>{
     const hit=vs.filter(v=>(v.covers||[]).indexOf(r.name)>=0);
     return {name:r.name, n:hit.length, prim:hit.some(v=>v.role==='primary')};
   });
@@ -5350,7 +5356,8 @@ function vGroup(g,list,names,online){
 }
 function watchBody(t){
   const vs=VIDEOS[t.id]||[];
-  const names=new Set((ROUTES[t.id]||[]).map(r=>r.name));
+  const core=isCore();
+  const names=new Set(routesOf(t.id).map(r=>r.name));
   const online=vOnline();
   const by=k=>vs.filter(v=>v.role===k);
   const prim=by('primary');
@@ -5364,20 +5371,23 @@ function watchBody(t){
     ${online?'':`<div class="warn"><b>You're offline.</b> This hub works without a connection;
       YouTube does not. The list below is still accurate, but the links are switched off
       until you are back online rather than served knowing they will fail.</div>`}
+    ${core&&nRest?`<p class="vgrpnote"><b>Core is showing ${prim.length} of ${vs.length}.</b>
+      The other ${nRest} — the longer alternates, the two-minute recaps, the full lectures —
+      are in Full. Nothing is deleted, just held back so this page stays short.</p>`:''}
     ${prim.length?vGroup(VROLES[0],prim,names,online)
       :'<p class="vgrpnote">No video on this channel covers this topic\'s objectives directly.</p>'}
-    ${nRest?`<details style="margin-top:12px"><summary>More on this topic (${nRest})</summary>
+    ${!core&&nRest?`<details style="margin-top:12px"><summary>More on this topic (${nRest})</summary>
       <div class="body">${rest.map(g=>vGroup(g,by(g.k),names,online)).join('')}</div></details>`:''}
 
     <div class="vgrplbl">Which pathways these videos reach</div>
-    <p class="vgrpnote">One chip per route on the map above.${noVid
+    <p class="vgrpnote">One chip per ${core?'core ':''}route on the map above.${noVid
       ?` ${noVid} of ${rs.length} ${noVid===1?'has':'have'} no video on this channel at all — that is
          not an oversight, it means ${noVid===1?'that route has':'those routes have'} to come out of the reading.`
       :' Every route here has a video.'}</p>
     <div class="vroutes">${rs.map(r=>`<span class="vrchip${r.prim?'':(r.n?' sup':' none')}">${esc(r.name)}${
       r.prim?'':`<em>${r.n?'support only':'no video'}</em>`}</span>`).join('')}</div>
 
-    ${gaps.length?`<details style="margin-top:12px"><summary>❓ Where this channel runs out (${gaps.length})</summary>
+    ${!core&&gaps.length?`<details style="margin-top:12px"><summary>❓ Where this channel runs out (${gaps.length})</summary>
       <div class="body">${gaps.map(g=>`<div class="vgap"><b>${esc(g.what)}</b><br>${esc(g.near)}
         <span class="vgapf">Instead: ${g.url&&online
           ?`<a href="${escA(g.url)}" target="_blank" rel="noopener noreferrer">${esc(g.src)}</a>`
@@ -5406,9 +5416,11 @@ function watchBody(t){
 function watchHtml(t){
   const vs=VIDEOS[t.id]||[];
   if(!vs.length) return '';
+  // the pill counts what this mode actually lists, not what exists
+  const n=isCore()?vs.filter(v=>v.role==='primary').length:vs.length;
   return `<details class="watch" id="watchBlock" data-t="${escA(t.id)}">
     <summary>▶︎ Watch — Dr Matt &amp; Dr Mike
-      <span class="pill">${vs.length} videos</span></summary>
+      <span class="pill">${n} video${n===1?'':'s'}</span></summary>
     <div class="body watchbody">${watchBody(t)}</div></details>`;
 }
 /* Rebound after every draw() AND after an online/offline swap, which replaces
@@ -5552,6 +5564,7 @@ function coreTopicView(t){
     <div class="big-idea">${gl(t.tagline)}</div>
     <div class="eyebrow">📖 The short version</div>
     <p class="coreGist">${t.gist}</p>
+    ${watchHtml(t)}
   </div>
 
   ${figsCard(t)}
@@ -5578,14 +5591,14 @@ function coreTopicView(t){
     ${p.done?`<div class="coreWin">
       <b>🎉 You've got the spine of this topic.</b>
       <p>The full version of ${esc(t.name)} adds ${hidden} more relation${hidden===1?'':'s'},
-      the glossary, the lecturer's own questions, the nursing notes and the video list.</p>
+      the glossary, the lecturer's own questions, the nursing notes and the rest of the videos.</p>
       <button class="cta" data-full="${t.id}">Open the full version of this topic →</button>
       ${nxt?`<p class="coreNextTx">Or carry on to <b>${nxt.icon} ${esc(nxt.name)}</b>.</p>`:
             `<p class="coreNextTx">That's every topic's spine held. Full mode is where the rest lives.</p>`}
     </div>`:`<div class="coreEsc">
       <p>Core shows the ${p.total} links that carry this topic. Full adds ${hidden} more,
-      plus the glossary, the lecturer's own questions, the nursing notes, the video list
-      and the case studies.</p>
+      plus the glossary, the lecturer's own questions, the nursing notes, the rest of the
+      videos and the case studies.</p>
       <button class="linkbtn" data-full="${t.id}">I want the full version now →</button>
       <span class="coreEscNote">Nothing is locked — you keep all your progress either way.</span>
     </div>`}

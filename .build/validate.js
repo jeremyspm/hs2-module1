@@ -30,10 +30,10 @@ const cut=src.indexOf('/* ══════════════════
 if(cut<0) { console.error('FAIL: could not find BOOT marker'); process.exit(1); }
 const body=src.slice(0,cut);
 
-const X=eval('(function(){'+body+'\nreturn {DATA,LINKS,ROUTES,chainsOf,metroGraph,metroLayout,CARD_W,LAB_W,offers,qid,mid,setMode,isCore,linksOf,routesOf,coreIdx,scopeOf,TOTAL_CORE,TOTAL_LINKS,FIGS,IMGS,CREDITS,figsAll,figsOf,figById,VIDEOS,VIDEO_GAPS,VROLES};})()');
+const X=eval('(function(){'+body+'\nreturn {DATA,LINKS,ROUTES,chainsOf,metroGraph,metroLayout,CARD_W,LAB_W,offers,qid,mid,setMode,isCore,linksOf,routesOf,coreIdx,scopeOf,TOTAL_CORE,TOTAL_LINKS,FIGS,IMGS,CREDITS,figsAll,figsOf,figById,VIDEOS,VIDEO_GAPS,VROLES,watchHtml};})()');
 const {DATA,LINKS,ROUTES,chainsOf,metroGraph,metroLayout,CARD_W,LAB_W,offers,qid,mid,
        setMode,isCore,linksOf,routesOf,coreIdx,scopeOf,TOTAL_CORE,TOTAL_LINKS,
-       FIGS,IMGS,CREDITS,figsAll,figsOf,figById,VIDEOS,VIDEO_GAPS,VROLES}=X;
+       FIGS,IMGS,CREDITS,figsAll,figsOf,figById,VIDEOS,VIDEO_GAPS,VROLES,watchHtml}=X;
 setMode('full');   // every section below §11 describes FULL mode; §11 flips it
 
 /* Station cards are now measured in the browser (metroSize → measureLabels), so
@@ -567,6 +567,30 @@ setMode('full');
   offers().forEach(o=>o.cards.forEach(c=>{
     if(vidIds.has(c.id)) bad(`${o.topic} bids card "${c.id}", which is a video id — videos must never reach the pulse`);
   }));
+
+  /* The block must RENDER, in BOTH modes. It shipped once rendering only in
+     Full, on the theory that Core is a distillation; a returning player whose
+     saved mode was Core then got no block, no explanation and no way to reach
+     it — indistinguishable from the feature being broken. Rendering the markup
+     headless is the cheapest way to make that unrepeatable. */
+  ['full','core'].forEach(m=>{
+    setMode(m);
+    (DATA.topics||[]).forEach(t=>{
+      const html=watchHtml(t)||'';
+      if(!html) return bad(`${t.id}: watchHtml() is empty in ${m} mode — the block would not render`);
+      if(html.indexOf('watch-'+t.id)<0&&html.indexOf('data-t="'+t.id+'"')<0)
+        bad(`${t.id}: watchHtml() in ${m} mode is not keyed to the topic`);
+      const rows=(html.match(/class="vrow/g)||[]).length;
+      if(!rows) bad(`${t.id}: watchHtml() in ${m} mode lists no videos`);
+      if(m==='core'&&rows!==VIDEOS[t.id].filter(v=>v.role==='primary').length)
+        bad(`${t.id}: Core lists ${rows} videos but has ${VIDEOS[t.id].filter(v=>v.role==='primary').length} primary`);
+      // Core must chip only the routes Core drew, or it names a map it never showed
+      const chips=(html.match(/class="vrchip/g)||[]).length;
+      if(chips!==routesOf(t.id).length)
+        bad(`${t.id}: ${m} mode chips ${chips} routes but routesOf() gives ${routesOf(t.id).length}`);
+    });
+  });
+  setMode('full');
 
   const roleLine=VROLES.map(r=>`${perRole[r.k]||0} ${r.k}`).join(' · ');
   console.log(`  ${placements} placements across ${Object.keys(VIDEOS).length} topics, ${byId.size} unique videos`);
