@@ -573,13 +573,29 @@ setMode('full');
      saved mode was Core then got no block, no explanation and no way to reach
      it — indistinguishable from the feature being broken. Rendering the markup
      headless is the cheapest way to make that unrepeatable. */
+  /* Read the delegated attribute names OUT OF draw() rather than listing them
+     here, so a binding added later is covered without anyone remembering to
+     update this file. */
+  const DELEGATED=[...new Set([...src.matchAll(
+    /\$\('#view'\)\.querySelectorAll\('\[(data-[a-z]+)\]'\)/g)].map(m=>m[1]))];
+  if(!DELEGATED.length) bad('could not find draw()\'s delegated [data-*] bindings — the hijack check is dead');
+
   ['full','core'].forEach(m=>{
     setMode(m);
     (DATA.topics||[]).forEach(t=>{
       const html=watchHtml(t)||'';
       if(!html) return bad(`${t.id}: watchHtml() is empty in ${m} mode — the block would not render`);
-      if(html.indexOf('watch-'+t.id)<0&&html.indexOf('data-t="'+t.id+'"')<0)
+      if(html.indexOf('data-watch="'+t.id+'"')<0)
         bad(`${t.id}: watchHtml() in ${m} mode is not keyed to the topic`);
+      /* draw() delegates a click handler onto every element carrying one of
+         these, anywhere inside #view. The block shipped once with `data-t`,
+         which draw() reads as "navigate to this topic": every tap on the
+         summary opened the <details>, bubbled, re-ran draw(), and produced a
+         fresh CLOSED block. Un-openable in both modes, and it read as the whole
+         feature being dead. Attribute names are a shared namespace here. */
+      DELEGATED.forEach(a=>{ if(html.indexOf(a+'=')>=0)
+        bad(`${t.id}: watchHtml() emits ${a}, which draw() binds a click handler to — `
+          +`the block will be hijacked. Use a name draw() does not delegate.`); });
       const rows=(html.match(/class="vrow/g)||[]).length;
       if(!rows) bad(`${t.id}: watchHtml() in ${m} mode lists no videos`);
       if(m==='core'&&rows!==VIDEOS[t.id].filter(v=>v.role==='primary').length)
