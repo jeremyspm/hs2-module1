@@ -30,10 +30,10 @@ const cut=src.indexOf('/* ══════════════════
 if(cut<0) { console.error('FAIL: could not find BOOT marker'); process.exit(1); }
 const body=src.slice(0,cut);
 
-const X=eval('(function(){'+body+'\nreturn {DATA,LINKS,ROUTES,chainsOf,metroGraph,metroLayout,CARD_W,LAB_W,offers,qid,mid,setMode,isCore,linksOf,routesOf,coreIdx,scopeOf,TOTAL_CORE,TOTAL_LINKS,FIGS,IMGS,CREDITS,figsAll,figsOf,figById};})()');
+const X=eval('(function(){'+body+'\nreturn {DATA,LINKS,ROUTES,chainsOf,metroGraph,metroLayout,CARD_W,LAB_W,offers,qid,mid,setMode,isCore,linksOf,routesOf,coreIdx,scopeOf,TOTAL_CORE,TOTAL_LINKS,FIGS,IMGS,CREDITS,figsAll,figsOf,figById,VIDEOS,VIDEO_GAPS,VROLES};})()');
 const {DATA,LINKS,ROUTES,chainsOf,metroGraph,metroLayout,CARD_W,LAB_W,offers,qid,mid,
        setMode,isCore,linksOf,routesOf,coreIdx,scopeOf,TOTAL_CORE,TOTAL_LINKS,
-       FIGS,IMGS,CREDITS,figsAll,figsOf,figById}=X;
+       FIGS,IMGS,CREDITS,figsAll,figsOf,figById,VIDEOS,VIDEO_GAPS,VROLES}=X;
 setMode('full');   // every section below §11 describes FULL mode; §11 flips it
 
 /* Station cards are now measured in the browser (metroSize → measureLabels), so
@@ -488,6 +488,91 @@ setMode('full');
   console.log(`  ${nSvg} authored SVG + ${nImg} rasters across ${Object.keys(FIGS).length} topics`);
   console.log(`  payload ${(bytes/1048576).toFixed(2)} MB base64 (${Object.keys(IMGS).length} images), `
     +`all CC BY with credits`);
+}
+
+/* ── 13 ───────────────────────────────────────────────────────────────────
+   The video list. It is ADDITIVE reference material — a link list attached to a
+   topic and nothing more — so most of what this section does is prove it stayed
+   that way: no video id may reach the ⚡ pulse, and nothing here may key
+   anything. The rest is fixture integrity. The mapping document's appendix is
+   the fixture: 122 placements, 118 unique ids, and a title/duration per id that
+   YouTube returned on 4 August 2026. The channel REUSES titles, so the only
+   safe identity is the id — a dedupe on title would silently delete content. */
+console.log('\n=== 13. Videos ===');
+setMode('full');
+{
+  const topicIds=new Set((DATA.topics||[]).map(t=>t.id));
+  const ROLES=new Set(VROLES.map(r=>r.k));
+  const DUR=/^(?:\d+:)?[0-5]?\d:[0-5]\d$/;
+  const byId=new Map();                       // id → {t,d} — the cross-topic fixture
+  let placements=0, uncovered=0;
+  const perRole={};
+
+  Object.keys(VIDEOS).forEach(tid=>{
+    if(!topicIds.has(tid)) return bad(`VIDEOS has key "${tid}" which is not a topic`);
+    const list=VIDEOS[tid]||[], here=new Set();
+    if(!list.length) return bad(`${tid}: VIDEOS entry is an empty list — drop the key instead`);
+    const names=new Set((ROUTES[tid]||[]).map(r=>r.name));
+    list.forEach(v=>{
+      placements++;
+      const w=m=>bad(`${tid} video "${v.id||'(no id)'}": ${m}`);
+      if(!v.id) return w('has no id');
+      if(here.has(v.id)) w('is listed twice in this topic');
+      here.add(v.id);
+      if(!v.t) w('has no title');
+      if(!ROLES.has(v.role)) w(`role "${v.role}" is not one of ${[...ROLES].join('/')}`);
+      if(!DUR.test(String(v.d||''))) w(`duration "${v.d}" is not m:ss or h:mm:ss`);
+      perRole[v.role]=(perRole[v.role]||0)+1;
+      // a video mapped to two topics must be the SAME video in both
+      const prev=byId.get(v.id);
+      if(prev){ if(prev.t!==v.t||prev.d!==v.d)
+          w(`is also mapped elsewhere as "${prev.t}" (${prev.d}) — same id, two fixtures`); }
+      else byId.set(v.id,{t:v.t,d:v.d});
+      // covers is DISPLAY ONLY and matched by string equality at render time, so
+      // a stale value is silently dropped on the page. Say so here instead.
+      (v.covers||[]).forEach(c=>{
+        if(names.has(c)) return;
+        const asFig=(FIGS[tid]||[]).some(f=>f.cap===c);
+        note(`${tid} "${v.id}" covers:"${c}" matches no route in ROUTES.${tid}`
+          +(asFig?' — it is a FIGURE caption, so it renders nowhere':' — it will render nowhere'));
+      });
+    });
+    if(!list.some(v=>v.role==='primary'))
+      bad(`${tid}: no primary video — the Watch block would open on an empty first group`);
+  });
+
+  // every topic must have a list, or the block silently disappears from that page
+  (DATA.topics||[]).forEach(t=>{ if(!(VIDEOS[t.id]||[]).length) bad(`${t.id} has no videos at all`); });
+
+  // route coverage: an uncovered route is fine, an unnoticed one is not
+  Object.keys(ROUTES).forEach(tid=>{
+    const vs=VIDEOS[tid]||[];
+    (ROUTES[tid]||[]).forEach(r=>{
+      if(!vs.some(v=>(v.covers||[]).indexOf(r.name)>=0)) uncovered++;
+    });
+  });
+
+  // the gap notes
+  Object.keys(VIDEO_GAPS).forEach(tid=>{
+    if(!topicIds.has(tid)) bad(`VIDEO_GAPS has key "${tid}" which is not a topic`);
+    (VIDEO_GAPS[tid]||[]).forEach((g,i)=>{
+      ['what','near','src'].forEach(k=>{ if(!g[k]) bad(`VIDEO_GAPS.${tid}[${i}] has no ${k}`); });
+      if(g.url&&!/^https:\/\//.test(g.url)) bad(`VIDEO_GAPS.${tid}[${i}] url is not https`);
+    });
+  });
+
+  /* THE load-bearing check. Video data must never participate in SRS, mastery
+     or the bid, and the way that breaks is a video id turning up as a card. */
+  const vidIds=new Set(byId.keys());
+  offers().forEach(o=>o.cards.forEach(c=>{
+    if(vidIds.has(c.id)) bad(`${o.topic} bids card "${c.id}", which is a video id — videos must never reach the pulse`);
+  }));
+
+  const roleLine=VROLES.map(r=>`${perRole[r.k]||0} ${r.k}`).join(' · ');
+  console.log(`  ${placements} placements across ${Object.keys(VIDEOS).length} topics, ${byId.size} unique videos`);
+  console.log(`  ${roleLine}`);
+  console.log(`  ${uncovered} of ${Object.values(ROUTES).reduce((s,r)=>s+r.length,0)} routes have no video`
+    +` · ${Object.values(VIDEO_GAPS).reduce((s,g)=>s+g.length,0)} gaps documented with a fallback`);
 }
 
 console.log('\n'+(fail?`❌ ${fail} FAILURES`:'✅ all invariants hold')+(warn?`  (${warn} notes)`:''));
